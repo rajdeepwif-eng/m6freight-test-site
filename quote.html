@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>M6 Freight Quote Desk</title>
 <meta name="robots" content="noindex">
 <link rel="stylesheet" href="styles.css">
@@ -39,6 +40,7 @@
       <div class="field"><label for="cname">Customer first name</label><input id="cname"></div>
       <div class="field"><label for="cphone">Customer mobile</label><input id="cphone" type="tel" placeholder="07…"></div>
     </div>
+    <label class="switch"><input type="checkbox" id="oldEnq"> <span>This is a reply to an <b>old enquiry</b> (one message only, no follow-ups)</span></label>
     <p class="err" id="err" hidden></p>
     <button class="btn btn-go" type="submit">Price it</button>
   </form>
@@ -104,7 +106,8 @@
     var who=co.ownerFirstName?co.ownerFirstName+" at M6 Freight":"M6 Freight";
     var approx=(st.r[0].approx||st.r[1].approx);
     var priceLine=st.local?("About "+M.money(q.total)+" (about "+(q.hours)+" hrs at £"+q.hourlyRate+"/hr: van, driver and fuel, no stairs fee). You pay for the actual time."+(approx?" Confirmed once we have your full address.":"")):((st.r[0].approx||st.r[1].approx)?"Estimated price (confirmed once we have your full address): ":"Fixed price: ")+M.money(q.total+(co.vatRegistered?" including VAT":"")+", all-in (van, driver, fuel; no stairs fee).");
-    $("msg").textContent="Hi"+(name?" "+name:"")+", it's "+who+". Thanks for your enquiry.\n\n"+
+    var opener=$("oldEnq").checked?(" You asked us for a price recently. We've changed to simpler all-in pricing, so here's your updated price:"):" Thanks for your enquiry.";
+    $("msg").textContent="Hi"+(name?" "+name:"")+", it's "+who+"."+opener+"\n\n"+
       $("from").value+" to "+$("to").value+" ("+st.miles+" miles)\n"+
       $("items").value+"\n"+v.name+(st.helpers?" + "+st.helpers+" helper"+(st.helpers>1?"s":""):"")+", "+st.date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})+"\n"+
       priceLine+"\n\n"+

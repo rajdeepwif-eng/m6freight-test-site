@@ -93,6 +93,16 @@
   $("fCompany").innerHTML = esc(co.legalName) + ", registered in " + esc(co.registeredIn) + "<br>Company no. " + esc(co.companyNumber) + "<br>Registered office: " + esc(co.registeredOffice) + (co.tradingAddress ? "<br>Trading address: " + esc(co.tradingAddress) : "") + (co.vatRegistered ? "" : "<br>Not VAT registered");
   $("fContact").innerHTML = 'Phone / WhatsApp: <a href="tel:+' + co.phoneIntl + '">' + esc(co.phoneDisplay) + '</a><br>Email: <a href="mailto:' + esc(co.email) + '">' + esc(co.email) + "</a><br>" + esc(co.hours) + "<br>Complaints: email us and we'll reply within 5 working days.";
 
+  /* ---------- structured data for search engines (used once the site is live) ---------- */
+  try {
+    var ld = { "@context": "https://schema.org", "@type": "MovingCompany", name: co.tradingName, legalName: co.legalName,
+      telephone: "+" + co.phoneIntl, email: co.email, url: C.siteUrl, areaServed: (C.base.towns || []).concat(["United Kingdom"]),
+      priceRange: "££", image: C.siteUrl + "img/hero-motorway.jpg" };
+    if (co.tradingAddress) ld.address = co.tradingAddress;
+    if (co.googleRating && +co.googleReviewCount >= 5) ld.aggregateRating = { "@type": "AggregateRating", ratingValue: co.googleRating, reviewCount: co.googleReviewCount };
+    var sc = document.createElement("script"); sc.type = "application/ld+json"; sc.textContent = JSON.stringify(ld); document.head.appendChild(sc);
+  } catch (x) {}
+
   /* ---------- quote form ---------- */
   var pick = $("pickDate"); pick.min = iso(new Date());
   document.querySelectorAll('input[name="when"]').forEach(function (r) {

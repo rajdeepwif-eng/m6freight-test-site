@@ -45,16 +45,22 @@ window.M6_CONFIG = {
   /* Vans. hourly = all-in rate for van + driver (fuel, blankets, straps, stairs included).
      base/perMile/minimum = fixed trip pricing. CONFIRM every number. */
   vans: [
-    { id: "small",  name: "Small van",  example: "Berlingo / Combo",  capacityM3: 3,  hourly: 45, base: 25, perMile: 1.30, minimum: 60 },
-    { id: "medium", name: "Medium van", example: "Transit Custom",    capacityM3: 6,  hourly: 55, base: 30, perMile: 1.60, minimum: 75 },
-    { id: "large",  name: "Large van",  example: "LWB Transit / Sprinter", capacityM3: 11, hourly: 65, base: 35, perMile: 2.10, minimum: 90 },
-    { id: "luton",  name: "Luton van",  example: "Luton + tail-lift", capacityM3: 18, hourly: 75, base: 45, perMile: 2.40, minimum: 110 }
+    // Hourly rates = MARKET-BASED PLACEHOLDERS (checked 18 Nov 2026), not his prices. CONFIRM.
+    //  - Wolverhampton removals average ~£43/hr, range £37–£120 (hamuch.com)
+    //  - Hello Vans Wolverhampton: small van + driver from £40/hr; Luton + 2 crew ~£60–£80/hr
+    //  - Checkatrade UK 2026: 1 man + van avg £64/hr (£35–£93); 2 men £78/hr
+    // Per-mile (trips) = placeholders kept so the charged rate incl. return share stays inside
+    //  Homemove's £1–£2/mile guide for 100+ mile jobs. Benchmark with 5 real local quotes.
+    { id: "small",  name: "Small van",  example: "Berlingo / Combo",  capacityM3: 3,  hourly: 40, base: 25, perMile: 1.10, minimum: 60 },
+    { id: "medium", name: "Medium van", example: "Transit Custom",    capacityM3: 6,  hourly: 45, base: 30, perMile: 1.30, minimum: 75 },
+    { id: "large",  name: "Large van",  example: "LWB Transit / Sprinter", capacityM3: 11, hourly: 50, base: 35, perMile: 1.55, minimum: 90 },
+    { id: "luton",  name: "Luton van",  example: "Luton + tail-lift", capacityM3: 18, hourly: 55, base: 45, perMile: 1.75, minimum: 110 }
   ],
 
   pricing: {
     roadFactor: 1.22,          // straight-line miles x this ≈ road miles (checked: B'ham–Manchester 86 vs 87)
     roadFactorLong: 1.15,      // trips over ~100 straight-line miles run mostly on motorways (checked: Durham–Bishop's Stortford ≈ 245 vs OSRM 242)
-    returnShare: 0.30,         // share of the empty return leg charged on trips
+    returnShare: 0.15,         // share of the empty return leg charged on trips
     minimumHours: 2,           // local hourly jobs
     incrementMinutes: 15,
     localMph: 20,              // town driving, for local time estimates

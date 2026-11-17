@@ -237,3 +237,5 @@ body.has-bar .wa{bottom:84px}
 
 @media (max-width:560px){.wa{display:none}}
 .switch input{width:20px;height:20px;flex:none}
+
+@media (max-width:920px){.hero::before{background:linear-gradient(180deg,rgba(6,20,45,.92) 0%,rgba(6,20,45,.82) 55%,rgba(6,20,45,.55) 100%)}}

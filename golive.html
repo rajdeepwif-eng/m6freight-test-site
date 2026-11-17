@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow"><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Go-live checklist</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div><header class="top"><div class="wrap"><a class="logo" href="index.html"><span class="shield">M6</span>FREIGHT</a></div></header>
+<main class="wrap" style="max-width:760px;padding:30px 20px 60px;display:grid;gap:14px">
+<h1 style="font-size:2.4rem">Go-live checklist</h1>
+<p class="small">Built live from the settings file (config.js). Green = set, amber = still a placeholder or empty. Nothing here is visible to customers unless they type this address.</p>
+<div class="tw"><table class="compare" id="chk"><thead><tr><th>Item</th><th>Current value</th><th>Status</th><th>Who / why</th></tr></thead><tbody></tbody></table></div>
+<h2 style="margin-top:24px">Before switching m6freightuk.co.uk to this site</h2>
+<ol style="display:grid;gap:8px;padding-left:1.3em">
+<li>Solicitor: cancellation terms (Consumer Contracts Regs reg 28(1)(h)), booking terms, privacy notice, PECR wording for WhatsApp replies.</li>
+<li>Insurer: Goods in Transit, public liability and hire-and-reward cover limits, and a damage promise if any.</li>
+<li>Stripe: create a Payment Link for the trip deposit and paste it into the settings.</li>
+<li>Rates: compare with 5 real quotes from local dedicated-van firms for the same jobs.</li>
+<li>Photos: replace the 3 AI images with real photos of the van, the driver and real jobs.</li>
+<li>Remove the TEST banner, the noindex tags and robots.txt; point the domain at the site; redirect m6freight.co.uk.</li>
+<li>Decide where bookings are logged (optional webhook) so none depend on the customer pressing WhatsApp.</li>
+</ol>
+<script src="config.js"></script>
+<script>
+(function(){var C=window.M6_CONFIG,co=C.company,P=C.payments,rows=[
+["Legal name","company.legalName",co.legalName,"Confirm on Companies House"],
+["Company number","company.companyNumber",co.companyNumber,"Confirm"],
+["Registered office","company.registeredOffice",co.registeredOffice,"Confirm (formation address?)"],
+["Trading address","company.tradingAddress",co.tradingAddress,"Required if the registered office is a virtual address"],
+["Email","company.email",co.email,"Confirm the inbox works"],
+["VAT registered","company.vatRegistered",String(co.vatRegistered),"Accountant"],
+["Owner's first name","company.ownerFirstName",co.ownerFirstName,"Shown on the site and messages"],
+["Goods in transit cover","company.goodsInTransitCover",co.goodsInTransitCover,"Insurer"],
+["Public liability","company.publicLiabilityCover",co.publicLiabilityCover,"Insurer"],
+["Google review link","company.googleReviewsUrl",co.googleReviewsUrl,"From his Google Business Profile"],
+["Google rating / count","company.googleRating",co.googleRating?co.googleRating+" / "+co.googleReviewCount:"","Real figures only; shows at 5+ reviews"],
+["Driver photo","company.driverPhoto",co.driverPhoto,"Real photo only"],
+["Padding kit owned","company.paddingStandard",String(co.paddingStandard),"Only true once used on every job"],
+["Damage promise","company.damagePromise",co.damagePromise,"Insurer + solicitor"],
+["Base town","base.place",C.base.place,"His real base"],
+["Hourly rates","vans[].hourly",C.vans.map(function(v){return v.name+" £"+v.hourly}).join(", "),"Market placeholders: replace with his rates"],
+["Per-mile rates","vans[].perMile",C.vans.map(function(v){return v.name+" £"+v.perMile}).join(", "),"Placeholders: benchmark against 5 quotes"],
+["Deposit payment link","payments.depositPaymentLink",P.depositPaymentLink,"Stripe Payment Link (he sets it up)"],
+["Booking log webhook","leadWebhookUrl",C.leadWebhookUrl,"Optional, recommended"],
+["Cancellation policy","cancellationPolicy",C.cancellationPolicy,"Solicitor"],
+["Return trips","returnTrips",C.returnTrips.length?C.returnTrips.length+" listed":"","Add real routes he's driving (optional)"]];
+var placeholder=/CONFIRM|being finalised|128 City Road|Wolverhampton|placeholder/;
+document.querySelector("#chk tbody").innerHTML=rows.map(function(r){var v=r[2]==null?"":String(r[2]);var ok=v&&v!=="false"&&!/being finalised/.test(v)&&r[0]!=="Hourly rates"&&r[0]!=="Per-mile rates"&&r[0]!=="Base town"&&r[0]!=="Registered office"&&r[0]!=="Legal name"&&r[0]!=="Company number";
+return "<tr><td><b>"+r[0]+"</b><br><span class='small'>"+r[1]+"</span></td><td>"+(v?v.replace(/</g,"&lt;"):"<i>empty</i>")+"</td><td><span class='mode' style='background:"+(ok?"#d8f0e2;color:#0b5a33":"#fff1cc;color:#6b4d00")+"'>"+(ok?"Set":"To confirm")+"</span></td><td class='small'>"+r[3]+"</td></tr>"}).join("");})();
+</script>
+</main></body></html>

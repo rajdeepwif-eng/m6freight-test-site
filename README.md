@@ -41,3 +41,7 @@ Charge the exact total by card at checkout. This needs one small server function
 - **Legal** (gate 5): the 14-day early-start box was removed until a solicitor decides whether Consumer Contracts Regs reg 28(1)(h) applies; trading disclosures added (registered in England and Wales, a slot for a trading address, complaints contact); booking messages now record the terms version and a timestamp.
 - **Privacy:** fonts are self-hosted (no Google requests); nothing is stored in the browser; the privacy notice has been rewritten (draft).
 - **Deposits:** a trip deposit is the higher of £25 or 20% of the price; `localDeposit` can be set if no-shows become a problem.
+
+## Update 18 Nov 2026
+- Hourly rates replaced with **market-based placeholders** (Wolverhampton average about £43/hr; Hello Vans from £40/hr; Checkatrade UK average £64/hr). Per-mile placeholders were lowered to fit Homemove's £1–£2/mile range. They are still not his prices.
+- Added `golive.html` (checklist), a favicon, WhatsApp/Facebook link previews, search-engine business data, a 404 page, and an "old enquiry" reply option in the quote desk.
