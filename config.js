@@ -49,6 +49,7 @@ window.M6_CONFIG = {
 
   pricing: {
     roadFactor: 1.22,          // straight-line miles x this ≈ road miles (checked: B'ham–Manchester 86 vs 87)
+    roadFactorLong: 1.15,      // trips over ~100 straight-line miles run mostly on motorways (checked: Durham–Bishop's Stortford ≈ 245 vs OSRM 242)
     returnShare: 0.30,         // share of the empty return leg charged on trips
     minimumHours: 2,           // local hourly jobs
     incrementMinutes: 15,

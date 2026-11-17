@@ -96,7 +96,8 @@
     var dLat = (b.lat - a.lat) * toR, dLng = (b.lng - a.lng) * toR;
     var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(a.lat * toR) * Math.cos(b.lat * toR) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
     var straight = 2 * R * Math.asin(Math.sqrt(h));
-    return Math.max(2, Math.round(straight * C.pricing.roadFactor));
+    var f = straight > 100 ? (C.pricing.roadFactorLong || 1.15) : C.pricing.roadFactor;
+    return Math.max(2, Math.round(straight * f));
   }
 
   /* ---------- 2. Item reader: "2 sofas, a fridge and 10 boxes" ---------- */
@@ -151,8 +152,7 @@
 
   /* ---------- 3. Price (all-in: no item, stairs or booking fees) ---------- */
   function isToday(d) { var t = new Date(); return d.toDateString() === t.toDateString(); }
-  function straight(a, b) { return miles(a, b) / C.pricing.roadFactor; }
-  // o: { van, miles, vol, date, helpers, flexible, local(bool) }
+    // o: { van, miles, vol, date, helpers, flexible, local(bool) }
   function price(o) {
     var P = C.pricing, v = o.van, lines = [], total, hours = null;
     var d = o.date || new Date();
@@ -194,5 +194,5 @@
   }
 
   window.M6 = { locate: locate, miles: miles, readItems: readItems, volume: volume, needsTwo: needsTwo, bestVan: bestVan,
-    price: price, straight: straight, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
+    price: price, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
 })();
