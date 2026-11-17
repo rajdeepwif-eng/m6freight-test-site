@@ -45,3 +45,8 @@ Charge the exact total by card at checkout. This needs one small server function
 ## Update 18 Nov 2026
 - Hourly rates replaced with **market-based placeholders** (Wolverhampton average about £43/hr; Hello Vans from £40/hr; Checkatrade UK average £64/hr). Per-mile placeholders were lowered to fit Homemove's £1–£2/mile range. They are still not his prices.
 - Added `golive.html` (checklist), a favicon, WhatsApp/Facebook link previews, search-engine business data, a 404 page, and an "old enquiry" reply option in the quote desk.
+
+## Update 18 Nov 2026 (later)
+- On phones, checkout now goes one step per screen (details, then addresses, then payment), following the GOV.UK "one thing per page" pattern. Desktop still shows the whole form at once.
+- WebP images: the hero is about 50% smaller and preloaded. Phone keyboards now match each field (number pad for phone numbers, capitals for postcodes).
+- To add next (needs his accounts): a postcode-to-address lookup service, and Apple Pay/Google Pay deposits through Stripe Checkout.

@@ -252,7 +252,8 @@
   function within14(d) { return (dayStart(d) - dayStart(new Date())) / 864e5 < 14; }
   function openCheckout() {
     var q = current();
-    $("checkout").hidden = false;
+    $("checkout").hidden = false; showStep(1);
+    $("bar").classList.remove("on"); document.body.classList.remove("has-bar");
     $("sPrice").textContent = (S.local ? "≈" : "") + M.money(q.total);
     $("sSummary").innerHTML = "<div><b>" + esc(S.from.label) + "</b> → <b>" + esc(S.to.label) + "</b></div><div>" + esc(van().name) + " · " + S.miles + " miles</div><div>" + esc(M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days)" : "") + "</div><div class='note'>" + (S.local ? "Hourly estimate, all-in" : "Fixed price, all-in") + "</div>";
     var dep = tripDeposit(q.total);
@@ -275,9 +276,35 @@
     $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
     setTimeout(function () { $("cName").focus({ preventScroll: true }); }, 500);
   }
+  /* ---------- one step per screen on phones ---------- */
+  var STEP = 1, STEPS = 3, mqStep = window.matchMedia("(max-width: 920px)");
+  function stepMissing(n) {
+    var m = [], digits = $("cPhone").value.replace(/\D/g, "");
+    if (n === 1) { if (!$("cName").value.trim()) m.push("name"); if (!/^(07\d{9}|447\d{9})$/.test(digits)) m.push("UK mobile number (07…)"); }
+    if (n === 2) { if (!$("cAddrFrom").value.trim()) m.push("collection address"); if (!$("cAddrTo").value.trim()) m.push("delivery address"); }
+    return m;
+  }
+  function showStep(n) {
+    STEP = n; var f = $("coForm");
+    f.classList.toggle("stepped", mqStep.matches);
+    f.classList.toggle("first", n === 1); f.classList.toggle("last", n === STEPS);
+    f.querySelectorAll(".cstep").forEach(function (s) { s.classList.toggle("on", +s.getAttribute("data-step") === n); });
+    $("stepNote").textContent = "Step " + n + " of " + STEPS;
+    $("coErr").hidden = true;
+  }
+  $("stepNext").addEventListener("click", function () {
+    var m = stepMissing(STEP);
+    if (m.length) { $("coErr").textContent = "Please add your " + m.join(", ") + "."; $("coErr").hidden = false; return; }
+    showStep(Math.min(STEPS, STEP + 1));
+    var first = document.querySelector('.cstep[data-step="' + STEP + '"] input'); if (first) first.focus({ preventScroll: true });
+    $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  $("stepBack").addEventListener("click", function () { showStep(Math.max(1, STEP - 1)); });
+  (mqStep.addEventListener ? mqStep.addEventListener("change", function () { showStep(STEP); }) : mqStep.addListener(function () { showStep(STEP); }));
+
   $("bookBtn").addEventListener("click", openCheckout);
   $("barBook").addEventListener("click", openCheckout);
-  $("backBtn").addEventListener("click", function () { $("results").scrollIntoView({ behavior: "smooth" }); });
+  $("backBtn").addEventListener("click", function () { $("bar").classList.add("on"); document.body.classList.add("has-bar"); $("results").scrollIntoView({ behavior: "smooth" }); });
 
   $("coForm").addEventListener("submit", function (e) {
     e.preventDefault();

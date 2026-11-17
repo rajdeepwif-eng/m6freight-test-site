@@ -12,9 +12,11 @@
 <meta property="og:image" content="https://rajdeepwif-eng.github.io/m6freight-test-site/img/hero-motorway.jpg">
 <meta property="og:url" content="https://rajdeepwif-eng.github.io/m6freight-test-site/">
 <meta name="theme-color" content="#08356f">
+<link rel="preload" as="image" href="img/hero-motorway.webp" media="(min-width: 921px)">
+<link rel="preload" as="image" href="img/hero-motorway-800.webp" media="(max-width: 920px)">
 <title>M6 Freight</title>
 <meta name="description" content="One van, clear all-in prices. Local jobs by the hour, longer trips at a fixed price. Book in a minute, no account. Same-day courier, single items, home moves and trade deliveries.">
-<link rel="stylesheet" href="styles.css?v=20261118b">
+<link rel="stylesheet" href="styles.css?v=20261118c">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
@@ -50,8 +52,8 @@
     <form class="card" id="quoteForm" novalidate>
       <h2>Get my price</h2>
       <div class="two">
-        <div class="field"><label for="from">Collect from</label><input id="from" autocomplete="postal-code" placeholder="Postcode or town" required></div>
-        <div class="field"><label for="to">Deliver to</label><input id="to" autocomplete="off" placeholder="Postcode or town" required></div>
+        <div class="field"><label for="from">Collect from</label><input id="from" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" placeholder="Postcode or town" required></div>
+        <div class="field"><label for="to">Deliver to</label><input id="to" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Postcode or town" required></div>
       </div>
       <div class="field">
         <label for="items">What's moving? Type it like a text</label>
@@ -151,27 +153,37 @@
 <section id="checkout" hidden>
   <div class="wrap co">
     <form class="panel" id="coForm" novalidate>
-      <h3>Your details</h3>
-      <div class="two">
-        <div class="field"><label for="cName">Full name</label><input id="cName" autocomplete="name" required></div>
-        <div class="field"><label for="cPhone">Mobile</label><input id="cPhone" type="tel" autocomplete="tel" required placeholder="07…"></div>
+      <p class="stepnote" id="stepNote" aria-live="polite"></p>
+      <div class="cstep" data-step="1">
+        <h3>Your details</h3>
+        <div class="two">
+          <div class="field"><label for="cName">Full name</label><input id="cName" autocomplete="name" required></div>
+          <div class="field"><label for="cPhone">Mobile</label><input id="cPhone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="07…"></div>
+        </div>
+        <div class="field"><label for="cEmail">Email (for your receipt, optional)</label><input id="cEmail" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false"></div>
       </div>
-      <div class="field"><label for="cEmail">Email (for your receipt, optional)</label><input id="cEmail" type="email" autocomplete="email"></div>
-      <div class="field"><label for="cAddrFrom">Full collection address</label><input id="cAddrFrom" autocomplete="off" required></div>
-      <div class="field"><label for="cAddrTo">Full delivery address</label><input id="cAddrTo" autocomplete="off" required></div>
-      <div class="field"><label for="cNotes">Anything the driver should know? (optional)</label><input id="cNotes" placeholder="Parking, floor and lift, access, contact on the day…"></div>
-
-      <h3 style="margin-top:6px">How would you like to pay?</h3>
-      <div class="pay" role="radiogroup" aria-label="Payment option" id="payOpts"></div>
-
-      <div class="consent" id="earlyBox" hidden>
-        <label class="switch"><input type="checkbox" id="cEarly"> <span>Please start my job within the 14-day cancellation period. I understand that if I cancel after the job has started I pay for the work done. <a href="terms.html" target="_blank" rel="noopener">Details</a></span></label>
+      <div class="cstep" data-step="2">
+        <h3>Addresses</h3>
+        <div class="field"><label for="cAddrFrom">Full collection address</label><input id="cAddrFrom" autocomplete="off" required></div>
+        <div class="field"><label for="cAddrTo">Full delivery address</label><input id="cAddrTo" autocomplete="off" required></div>
+        <div class="field"><label for="cNotes">Anything the driver should know? (optional)</label><input id="cNotes" placeholder="Parking, floor and lift, access, contact on the day…"></div>
       </div>
-      <p class="small" id="cancelInfo"></p>
-      <label class="switch"><input type="checkbox" id="cTerms" required> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">booking terms</a>.</span></label>
-      <label class="switch"><input type="checkbox" id="cUpdates"> <span>Send me booking updates and the driver's ETA on WhatsApp (optional; reply STOP any time).</span></label>
+      <div class="cstep" data-step="3">
+        <h3>How would you like to pay?</h3>
+        <div class="pay" role="radiogroup" aria-label="Payment option" id="payOpts"></div>
+        <div class="consent" id="earlyBox" hidden>
+          <label class="switch"><input type="checkbox" id="cEarly"> <span>Please start my job within the 14-day cancellation period. I understand that if I cancel after the job has started I pay for the work done. <a href="terms.html" target="_blank" rel="noopener">Details</a></span></label>
+        </div>
+        <p class="small" id="cancelInfo"></p>
+        <label class="switch"><input type="checkbox" id="cTerms" required> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">booking terms</a>.</span></label>
+        <label class="switch"><input type="checkbox" id="cUpdates"> <span>Send me booking updates and the driver's ETA on WhatsApp (optional; reply STOP any time).</span></label>
+      </div>
       <p class="err" id="coErr" role="alert" hidden></p>
-      <button class="btn btn-go" type="submit">Send booking request</button>
+      <div class="stepnav">
+        <button class="btn btn-ghost" type="button" id="stepBack">← Back</button>
+        <button class="btn btn-go" type="button" id="stepNext">Continue</button>
+      </div>
+      <button class="btn btn-go" type="submit" id="coSubmit">Send booking request</button>
       <p class="note" id="cardNote">Card payments open a secure Stripe page. We never see or store your card details.</p>
     </form>
     <aside class="buy" aria-label="Booking summary">
@@ -222,7 +234,7 @@
 
 <section class="band" id="moves">
   <div class="wrap split">
-    <div class="ph"><img src="img/home-move-800.jpg" srcset="img/home-move-800.jpg 800w, img/home-move.jpg 1600w" sizes="(max-width:860px) 100vw, 560px" alt="White van outside a terraced house, rear doors open, sofa wrapped in blankets and strapped inside" loading="lazy" width="1600" height="900"></div>
+    <div class="ph"><picture><source type="image/webp" srcset="img/home-move-800.webp 800w, img/home-move.webp 1600w" sizes="(max-width:860px) 100vw, 560px"><img src="img/home-move-800.jpg" srcset="img/home-move-800.jpg 800w, img/home-move.jpg 1600w" sizes="(max-width:860px) 100vw, 560px" alt="White van outside a terraced house, rear doors open, sofa wrapped in blankets and strapped inside" loading="lazy" width="1600" height="900"></picture></div>
     <div style="display:grid;gap:14px">
       <h2 style="margin:0">Moves and single items</h2>
       <ul class="ticks">
@@ -254,7 +266,7 @@
 
 <section class="band biz" id="trade">
   <div class="wrap split rev">
-    <div class="ph"><img src="img/business-pallets-800.jpg" srcset="img/business-pallets-800.jpg 800w, img/business-pallets.jpg 1600w" sizes="(max-width:860px) 100vw, 560px" alt="White van backed up to a loading bay with two shrink-wrapped pallets" loading="lazy" width="1600" height="900"></div>
+    <div class="ph"><picture><source type="image/webp" srcset="img/business-pallets-800.webp 800w, img/business-pallets.webp 1600w" sizes="(max-width:860px) 100vw, 560px"><img src="img/business-pallets-800.jpg" srcset="img/business-pallets-800.jpg 800w, img/business-pallets.jpg 1600w" sizes="(max-width:860px) 100vw, 560px" alt="White van backed up to a loading bay with two shrink-wrapped pallets" loading="lazy" width="1600" height="900"></picture></div>
     <div style="display:grid;gap:14px">
       <h2 style="margin:0">Trade account</h2>
       <ul class="ticks">
@@ -320,8 +332,8 @@
 <div class="bar" id="bar"><div><div class="note" id="barVan"></div><div class="p tab" id="barPrice"></div></div><button class="btn btn-go" type="button" id="barBook">Book</button></div>
 <a class="wa" id="waFloat" href="#" target="_blank" rel="noopener">WhatsApp us</a>
 
-<script src="config.js?v=20261118b"></script>
-<script src="engine.js?v=20261118b"></script>
-<script src="app.js?v=20261118b"></script>
+<script src="config.js?v=20261118c"></script>
+<script src="engine.js?v=20261118c"></script>
+<script src="app.js?v=20261118c"></script>
 </body>
 </html>
