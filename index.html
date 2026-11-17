@@ -16,7 +16,7 @@
 <link rel="preload" as="image" type="image/webp" href="img/hero-motorway-800.webp" media="(max-width: 920px)">
 <title>M6 Freight</title>
 <meta name="description" content="One van, clear all-in prices. Local jobs by the hour, longer trips at a fixed price. Book in a minute, no account. Same-day courier, single items, home moves and trade deliveries.">
-<link rel="stylesheet" href="styles.css?v=20261118e">
+<link rel="stylesheet" href="styles.css?v=20261118f">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
@@ -171,11 +171,14 @@
         <h3>Addresses</h3>
         <div class="field"><label for="cAddrFrom">Full collection address</label><input id="cAddrFrom" autocomplete="off" required></div>
         <div class="field"><label for="cAddrTo">Full delivery address</label><input id="cAddrTo" autocomplete="off" required></div>
+        <div class="field"><label for="cSlot">Collection time</label><select id="cSlot"></select></div>
+        <p class="small" id="addrNote">We share your full addresses only with the driver doing your job.</p>
         <div class="field"><label for="cNotes">Anything the driver should know? (optional)</label><input id="cNotes" placeholder="Parking, floor and lift, access, contact on the day…"></div>
       </div>
       <div class="cstep" data-step="3">
         <h3>How would you like to pay?</h3>
         <div class="pay" role="radiogroup" aria-label="Payment option" id="payOpts"></div>
+        <div class="field" id="promoBox" hidden><label for="cPromo">Discount code (optional)</label><div style="display:flex;gap:8px"><input id="cPromo" autocapitalize="characters" spellcheck="false" style="flex:1"><button type="button" class="btn btn-ghost" id="promoBtn">Apply</button></div><p class="small" id="promoMsg" aria-live="polite"></p></div>
         <div class="consent" id="earlyBox" hidden>
           <label class="switch"><input type="checkbox" id="cEarly"> <span>Please start my job within the 14-day cancellation period. I understand that if I cancel after the job has started I pay for the work done. <a href="terms.html" target="_blank" rel="noopener">Details</a></span></label>
         </div>
@@ -331,15 +334,15 @@
   <div class="wrap">
     <div><h3>M6 Freight</h3><p id="fCompany"></p></div>
     <div><h3>Contact</h3><p id="fContact"></p></div>
-    <div><h3>Info</h3><p><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="guides/man-and-van-prices.html">Man and van prices guide</a><br><a href="guides/moving-checklist.html">Moving checklist</a><br><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a></p><p class="small" id="areaLinks" style="color:#c6cfdc"></p></div>
+    <div><h3>Info</h3><p><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="drive.html">Drive with us</a><br><a href="guides/man-and-van-prices.html">Man and van prices guide</a><br><a href="guides/moving-checklist.html">Moving checklist</a><br><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a></p><p class="small" id="areaLinks" style="color:#c6cfdc"></p></div>
   </div>
 </footer>
 
 <div class="bar" id="bar"><div><div class="note" id="barVan"></div><div class="p tab" id="barPrice"></div></div><button class="btn btn-go" type="button" id="barBook">Book</button></div>
 <a class="wa" id="waFloat" href="#" target="_blank" rel="noopener">WhatsApp us</a>
 
-<script src="config.js?v=20261118e"></script>
-<script src="engine.js?v=20261118e"></script>
-<script src="app.js?v=20261118e"></script>
+<script src="config.js?v=20261118f"></script>
+<script src="engine.js?v=20261118f"></script>
+<script src="app.js?v=20261118f"></script>
 </body>
 </html>

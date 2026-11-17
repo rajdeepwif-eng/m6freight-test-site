@@ -117,6 +117,11 @@ window.M6_CONFIG = {
     ]
   },
 
+  // Discount codes: CODE: percent off. Only real, time-limited offers (DMCC Act 2024 / CMA pricing rules). Empty {} hides the field.
+  // Each code needs a real end date and terms shown next to it. TEST10 is for testing only (go-live check blocks it).
+  promoCodes: { TEST10: { pct: 10, ends: "2026-12-31", terms: "New bookings only, one per booking." } },
+  slots: ["8–10am", "10am–12pm", "12–2pm", "2–4pm", "4–6pm"],
+  driversWanted: true,      // show the "Drive with us" partner page link
   leadWebhookUrl: "",                // optional n8n / Make / Zapier webhook for every price + booking
   siteUrl: "https://rajdeepwif-eng.github.io/m6freight-test-site/"
 };

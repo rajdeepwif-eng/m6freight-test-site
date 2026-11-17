@@ -98,6 +98,8 @@ S = [  # id, from, to, items, when, extra, expect
  (51,"WV1 1AA","WS1 1AA","sofa","tomorrow",{"stale":True,"pay":"deposit"},"trip"),
  (52,"WV1 1AA","B1 1AA","4 bedroom house","tomorrow",{},"oversize"),
  (53,"WV1 1AA","Ryde","sofa","tomorrow",{},"err-ferry"),
+ (55,"B1 1AA","M1 1AE","sofa","tomorrow",{"promo":"TEST10","slot":True,"pay":"deposit"},"trip"),
+ (56,"WV1 1AA","B1 1AA","sofa","tomorrow",{"promo":"FAKE99"},"local"),
  (54,"QS","","","",{"url":"index.html?from=WV1%201AA&to=B1%201AA&items=sofa&date=2020-01-01"},"local"),
 ]
 
@@ -204,6 +206,19 @@ async def run_one(b, sc):
         if pay:
             if pay in opts: await pg.evaluate("id=>{var x=document.getElementById(id);x.checked=true;x.dispatchEvent(new Event('change',{bubbles:true}))}", "p_" + pay)
             else: I.append("pay option '%s' missing (have %s)" % (pay, opts))
+        if ex.get("slot"):
+            if not await pg.is_visible("#cSlot"):
+                for _ in range(2):
+                    if await pg.is_visible("#stepBack"): await pg.click("#stepBack")
+            await pg.select_option("#cSlot", index=2)
+        if ex.get("promo"):
+            before = money(await pg.inner_text("#sPrice"))
+            if not await pg.is_visible("#promoBox"): I.append("promo box hidden")
+            await pg.fill("#cPromo", ex["promo"]); await pg.click("#promoBtn"); await pg.wait_for_timeout(400)
+            after = money(await pg.inner_text("#sPrice")); res["promoMsg"] = await pg.inner_text("#promoMsg")
+            if ex["promo"] == "TEST10" and not (before and after and abs(after - round(before * 0.9)) <= 1): I.append("promo not applied: %s -> %s" % (before, after))
+            if ex["promo"] == "FAKE99" and after != before: I.append("invalid promo changed price")
+            res["price2"] = await pg.inner_text("#sPrice")
         if o["terms"]: await pg.check("#cTerms", force=True)
         amt = await pg.eval_on_selector_all('input[name="pay"]:checked + label .amt', "a=>a.map(x=>x.textContent)")
         res["payAmt"] = amt[0] if amt else ""
@@ -227,6 +242,8 @@ async def run_one(b, sc):
         if pm and dm and abs(pm - dm) > 0.5: I.append("price changed between quote £%s and done £%s" % (pm, dm))
         if await pg.locator("img[src=x]").count() or await pg.locator("#cNotes ~ script, #done script").count(): I.append("XSS: markup rendered")
         if len(href) > 4000: I.append("WhatsApp link %d chars (may be cut off)" % len(href))
+        if ex.get("slot") and "time: " not in msg: I.append("time slot missing from message")
+        if ex.get("promo") == "TEST10" and "Code TEST10" not in msg: I.append("promo line missing from message")
         if pay == "deposit" and pm:
             dep = money(res["payAmt"]); exp_dep = max(25, round(pm * 0.2))
             if dep is None or abs(dep - exp_dep) > 1: I.append("deposit £%s, expected about £%s" % (dep, exp_dep))
@@ -263,6 +280,9 @@ async def extra(b):
     await pg.click("#mdSend"); h = await pg.get_attribute("#mdSend", "href")
     out.append(("trade-multidrop", urllib.parse.unquote(h.split("text=")[1])[:160] if "text=" in h else "NO LINK"))
     await pg.goto(BASE + "trade.html"); await pg.click("#mdSend"); out.append(("trade-empty-validation", await pg.inner_text("#mdErr")))
+    await pg.goto(BASE + "drive.html"); await pg.click("#dSend"); out.append(("drive-empty", await pg.inner_text("#dErr")))
+    await pg.fill("#dName", "Ali"); await pg.fill("#dPhone", "07700900123"); await pg.fill("#dArea", "Telford"); await pg.click("#dSend")
+    h = await pg.get_attribute("#dSend", "href"); out.append(("drive-apply", urllib.parse.unquote(h.split("text=")[1]) if "text=" in h else "NO LINK"))
     await pg.goto(BASE + "track.html"); await pg.fill("#tRef", "m6-7kx2p"); await pg.fill("#tPhone", "07700900123"); await pg.click("#tf button")
     out.append(("track-sample", (await pg.inner_text("#tOut"))[:120]))
     await pg.fill("#tRef", "hello"); await pg.click("#tf button"); out.append(("track-bad-ref", await pg.inner_text("#tErr")))

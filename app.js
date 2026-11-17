@@ -48,7 +48,7 @@
     [PAY.localDeposit ? "Small deposit, pay the rest after" : "No deposit on local jobs", "Request in about a minute and pay when the job's done. Free date changes up to " + P.freeChangeHours + " hours before."],
     [co.arrivalWindowHours + "-hour arrival window", "Plus a WhatsApp message when we're about 30 minutes away." + (co.noCancellationsMonths ? " No cancellations by us in the last " + co.noCancellationsMonths + " months." : "")]
   ];
-  if (co.ownerDriven) R.push(["The owner drives your job", "The person you message is the person who turns up" + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
+  if (co.ownerDriven) R.push(["The owner drives your job", (C.driversWanted ? "The person you message is the person who turns up. If we ever need a partner driver, we tell you first and you can say no" : "The person you message is the person who turns up") + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
   if (co.paddingStandard) R.push(["Padded, every time", "Blankets and wrap on every piece, door-frame and floor protection in your home. Standard, not an extra."]);
   if (co.damagePromise) R.push(["Our damage promise", co.damagePromise + (co.claimReplyHours ? " We reply to any damage report within " + co.claimReplyHours + " hours." : "")]);
   else if (co.proofOfDelivery) R.push(["Proof at every step", "A photo when it's delivered, sent to you on WhatsApp."]);
@@ -183,7 +183,7 @@
       S.date = when;
       S.helpersTouched = false; S.helpers = M.needsTwo(S.items) ? 1 : 0;
       if (S.pendingHelpers) { S.helpers = S.pendingHelpers; S.helpersTouched = true; S.pendingHelpers = 0; }
-      S.flexible = false; $("flex").checked = false;
+      S.flexible = false; $("flex").checked = false; S.promo = ""; $("cPromo").value = ""; $("promoMsg").textContent = "";
       showResults(true);
       if (S.dateNote) { S.dateNote = false; var n = document.createElement("span"); n.className = "note"; n.textContent = " The date in your link wasn't available, so we've shown " + fmtDate(S.date) + ". Pick another day below."; $("bWhen").appendChild(n); }
       M.postLead({ type: "price_viewed", from: f, to: t, miles: S.miles, local: S.local, items: $("items").value, date: iso(S.date), price: current().total, van: S.vanId, at: new Date().toISOString() });
@@ -191,7 +191,7 @@
   });
 
   function van() { return C.vans.filter(function (v) { return v.id === S.vanId; })[0]; }
-  function quoteFor(v, d) { return M.price({ van: v, miles: S.miles, vol: S.vol, date: d || S.date, helpers: S.helpers, flexible: S.flexible, local: S.local }); }
+  function quoteFor(v, d) { return M.price({ van: v, miles: S.miles, vol: S.vol, date: d || S.date, helpers: S.helpers, flexible: S.flexible, local: S.local, promo: S.promo }); }
   function current() { return quoteFor(van()); }
 
   function showResults(scroll) {
@@ -322,7 +322,18 @@
     $("cardNote").hidden = S.local && !PAY.localDeposit;
     $("cAddrFrom").placeholder = "House number, street — " + S.fromText;
     $("cAddrTo").placeholder = "House number, street — " + S.toText;
+    var sl = $("cSlot"), keep = sl.value; var nowH = new Date().getHours(), slots = (C.slots || []).filter(function (x) { if (!M.isToday(S.date)) return true; var m = x.match(/^(\d+)/), h = +m[1]; if (/^\d+(am)?[–-]/.test(x) && h < 8) h += 12; if (/^\d+[–-]\d+pm/.test(x) && h < 8) h += 12; return h > nowH + 1; });
+    sl.innerHTML = '<option value="">Any time (we confirm)</option>' + slots.map(function (x) { return "<option>" + esc(x) + "</option>"; }).join(""); sl.value = keep;
+    $("promoBox").hidden = !C.promoCodes || !Object.keys(C.promoCodes).length;
   }
+  $("promoBtn").addEventListener("click", function () {
+    var c = $("cPromo").value.trim().toUpperCase();
+    if (!c) { S.promo = ""; $("promoMsg").textContent = ""; }
+    else if (M.promoInfo(c, S.date)) { var pi = M.promoInfo(c, S.date); S.promo = c; $("promoMsg").textContent = "Code " + c + " applied: " + pi.pct + "% off" + (S.local ? " your final bill" : "") + (pi.ends ? ". Ends " + fmtDate(new Date(pi.ends + "T12:00")) : "") + (pi.terms ? ". " + pi.terms : "") + "."; }
+    else if (C.promoCodes[c]) { S.promo = ""; $("promoMsg").textContent = "That code has ended."; }
+    else { S.promo = ""; $("promoMsg").textContent = "That code isn't valid."; }
+    renderAll();
+  });
   /* ---------- one step per screen on phones ---------- */
   var STEP = 1, STEPS = 3, mqStep = window.matchMedia("(max-width: 920px)");
   function stepMissing(n) {
@@ -371,7 +382,7 @@
     var msg = "BOOKING REQUEST\n" + summaryText(q, [
       "Price lines: " + q.lines.map(function (l) { return l.label + " " + (l.amount < 0 ? "-" : "") + M.money(Math.abs(l.amount)); }).join("; "),
       "Payment: " + payTxt, "Name: " + name, "Mobile: " + phone + (email ? "\nEmail: " + email : ""),
-      "Collect: " + aF, "Deliver: " + aT + ($("cNotes").value.trim() ? "\nNotes: " + $("cNotes").value.trim() : ""),
+      "Collect: " + aF + ($("cSlot").value ? " (time: " + $("cSlot").value + ")" : ""), "Deliver: " + aT + ($("cNotes").value.trim() ? "\nNotes: " + $("cNotes").value.trim() : ""),
       "Agreed to booking terms: yes (" + TERMS_VERSION + ")", "WhatsApp updates: " + ($("cUpdates").checked ? "yes" : "no"),
       "Sent: " + new Date().toLocaleString("en-GB")
     ]);
@@ -392,7 +403,7 @@
       ["We confirm", "Your booking is confirmed when we reply on WhatsApp (we aim to within " + co.replyPromiseMinutes + " minutes, " + co.hours + ")" + (pay === "full" ? ", with your secure payment link." : pay === "deposit" && !PAY.depositPaymentLink ? ", with your deposit link." : ".")],
       ["Day before", (co.dayBeforePhoto ? "Driver photo, van and " : "Your ") + "arrival window. Change the date free up to " + P.freeChangeHours + "h before."],
       ["On the way", "A message when we're about 30 minutes away."],
-      ["Done", (co.proofOfDelivery ? "Photo when it's delivered" : "Check everything's arrived") + (S.local ? ", then pay for the actual time." : ".")]
+      ["Done", (co.proofOfDelivery ? "Photo when it's delivered, then reply 'all received' on WhatsApp" : "Check everything's arrived, then reply 'all received' on WhatsApp") + (S.local ? ", then pay for the actual time." : ".")]
     ];
     $("dTimeline").innerHTML = steps.map(function (s, i) { return '<li><span class="n">' + (i + 1) + "</span><span><b>" + esc(s[0]) + "</b><br>" + esc(s[1]) + "</span></li>"; }).join("");
     $("checkout").hidden = true; $("results").hidden = true; $("done").hidden = false;
@@ -400,6 +411,7 @@
     $("done").scrollIntoView({ behavior: "smooth", block: "start" });
   });
 
+  if (!C.driversWanted) document.querySelectorAll('a[href="drive.html"]').forEach(function (a) { var br = a.nextElementSibling; if (br && br.tagName === "BR") br.remove(); a.remove(); });
   /* ---------- pre-filled links from the quote desk, or a remembered quote ---------- */
   var qs = new URLSearchParams(location.search);
   if (qs.get("from") && qs.get("to")) {

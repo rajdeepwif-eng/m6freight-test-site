@@ -103,6 +103,12 @@
     for (var j = 0; j < OFFWORDS.length; j++) if (OFFWORDS[j][0].test(q)) return OFFWORDS[j][1];
     return null;
   }
+  function promoInfo(code, on) {
+    var p = code && C.promoCodes && C.promoCodes[code]; if (!p) return null;
+    if (typeof p === "number") p = { pct: p };
+    if (p.ends) { var e = p.ends.split("-"), end = new Date(+e[0], +e[1] - 1, +e[2], 23, 59, 59); if ((on || new Date()) > end || new Date() > end) return null; }
+    return p;
+  }
   function miles(a, b) {
     var R = 3958.8, toR = Math.PI / 180;
     var dLat = (b.lat - a.lat) * toR, dLng = (b.lng - a.lng) * toR;
@@ -189,6 +195,8 @@
     var day = d.getDay();
     if (!o.flexible && (day === 0 || day === 6)) { var we = total * P.weekendPct / 100; lines.push({ label: "Weekend", amount: we }); total += we; }
     if (o.flexible) { var fx = -total * P.flexiblePct / 100; lines.push({ label: "Flexible-date saving", amount: fx }); total += fx; }
+    var pc = promoInfo(o.promo, d);
+    if (pc) { var pr = -total * pc.pct / 100; lines.push({ label: "Code " + o.promo + " (" + pc.pct + "% off" + (o.local ? " your final bill" : "") + ")", amount: pr }); total += pr; }
     lines.forEach(function (l) { l.amount = Math.round(l.amount); });
     total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
     var hourlyRate = o.local ? Math.round(total / hours) : null;
@@ -211,5 +219,5 @@
   }
 
   window.M6 = { locate: locate, miles: miles, readItems: readItems, volume: volume, needsTwo: needsTwo, bestVan: bestVan,
-    offshore: offshore, price: price, maxM3: function () { return C.vans[C.vans.length - 1].capacityM3 * 0.9; }, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
+    offshore: offshore, promoInfo: promoInfo, price: price, maxM3: function () { return C.vans[C.vans.length - 1].capacityM3 * 0.9; }, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
 })();
