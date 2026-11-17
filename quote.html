@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M6 Freight Quote Desk</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .desk{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px 0 60px}
+  @media (max-width:900px){.desk{grid-template-columns:1fr}}
+  .out{white-space:pre-wrap;background:var(--blue-soft);border-radius:8px;padding:12px;font:15px/1.5 var(--body)}
+  table.qt{width:100%;border-collapse:collapse}
+  table.qt td,table.qt th{padding:8px;border-bottom:1px solid var(--line);text-align:left}
+  table.qt tr.sel{background:var(--blue-soft)}
+  table.qt button{border:2px solid var(--blue);background:#fff;color:var(--blue);border-radius:6px;padding:3px 10px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+<div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
+<header class="top"><div class="wrap"><a class="logo" href="index.html"><span class="shield">M6</span>QUOTE DESK</a><nav><a href="index.html">Customer site</a></nav></div></header>
+<main class="wrap desk">
+  <form class="panel" id="f" novalidate>
+    <h3>1 · Paste the enquiry</h3>
+    <div class="field"><label for="paste">Customer's message (we pull out postcodes and items)</label>
+      <textarea id="paste" placeholder="e.g. Hi, can you move a 3 seater sofa and 6 boxes from B66 2AA to LS1 4DY on Friday?"></textarea></div>
+    <button type="button" class="btn btn-ghost" id="readBtn">Read it</button>
+    <h3>2 · Check the job</h3>
+    <div class="two">
+      <div class="field"><label for="from">From</label><input id="from"></div>
+      <div class="field"><label for="to">To</label><input id="to"></div>
+    </div>
+    <div class="field"><label for="items">Items</label><input id="items"></div>
+    <div class="two">
+      <div class="field"><label for="date">Date</label><input id="date" type="date"></div>
+      <div class="field"><label for="helpers">Extra people</label><select id="helpers"><option>0</option><option>1</option><option>2</option><option>3</option></select></div>
+    </div>
+    <div class="two">
+      <div class="field"><label for="cname">Customer first name</label><input id="cname"></div>
+      <div class="field"><label for="cphone">Customer mobile</label><input id="cphone" type="tel" placeholder="07…"></div>
+    </div>
+    <p class="err" id="err" hidden></p>
+    <button class="btn btn-go" type="submit">Price it</button>
+  </form>
+
+  <div class="panel" id="res" hidden>
+    <h3>3 · Prices</h3>
+    <p id="trip" class="note"></p>
+    <table class="qt"><thead><tr><th>Van</th><th>Price</th><th></th></tr></thead><tbody id="rows"></tbody></table>
+    <h3>4 · Reply (edit if you like, then send)</h3>
+    <div class="out" id="msg" contenteditable="true" aria-label="Reply message"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" class="btn btn-blue" id="copy">Copy reply</button>
+      <a class="btn btn-wa" id="send" href="#" target="_blank" rel="noopener">Open WhatsApp to customer</a>
+    </div>
+    <p class="note">The link in the reply opens the website with this job already filled in, so the customer just taps Book.</p>
+  </div>
+</main>
+<script src="config.js"></script>
+<script src="engine.js"></script>
+<script>
+(function(){
+  var C=window.M6_CONFIG,M=window.M6,$=function(i){return document.getElementById(i)};
+  var st={}, d=new Date(); d.setDate(d.getDate()+1); $("date").value=d.toISOString().slice(0,10);
+  var PC=/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/gi;
+  $("readBtn").addEventListener("click",function(){
+    var t=$("paste").value, pcs=t.match(PC)||[];
+    if(pcs[0])$("from").value=pcs[0].toUpperCase(); if(pcs[1])$("to").value=pcs[1].toUpperCase();
+    var rest=t.replace(PC," ").replace(/\b(hi|hello|hey|please|can you|could you|move|moving|deliver|collect|from|to|on|a quote|quote|price|for|how much|thanks|thank you|cheers|today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week)\b/gi," ");
+    var items=M.readItems(rest).filter(function(i){return i.known;});
+    if(items.length)$("items").value=items.map(function(i){return (i.qty>1?i.qty+" ":"")+i.name;}).join(", ");
+    var days=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"], low=t.toLowerCase();
+    if(low.indexOf("tomorrow")>-1){var x=new Date();x.setDate(x.getDate()+1);$("date").value=x.toISOString().slice(0,10);}
+    else if(low.indexOf("today")>-1){$("date").value=new Date().toISOString().slice(0,10);}
+    else days.forEach(function(dn,i){ if(low.indexOf(dn)>-1){var x=new Date();var diff=(i-x.getDay()+7)%7||7;x.setDate(x.getDate()+diff);$("date").value=x.toISOString().slice(0,10);} });
+  });
+  $("f").addEventListener("submit",function(e){
+    e.preventDefault(); $("err").hidden=true;
+    Promise.all([M.locate($("from").value),M.locate($("to").value),M.locate(C.base.place)]).then(function(r){
+      if(!r[0]||!r[1]){$("err").textContent="Couldn't find one of the places. Use a postcode.";$("err").hidden=false;return;}
+      var p=$("date").value.split("-"); st.date=new Date(+p[0],+p[1]-1,+p[2]);
+      st.miles=M.miles(r[0],r[1]); st.items=M.readItems($("items").value||"parcel"); st.vol=M.volume(st.items);
+      st.helpers=parseInt($("helpers").value,10); st.van=M.bestVan(st.vol).id; st.r=r;
+      st.local=!!r[2]&&M.miles(r[2],r[0])<=C.base.localRadiusMiles&&M.miles(r[2],r[1])<=C.base.localRadiusMiles;
+      if(M.needsTwo(st.items)&&st.helpers===0){st.helpers=1;$("helpers").value="1";}
+      draw();
+    });
+  });
+  function draw(){
+    $("res").hidden=false;
+    $("trip").textContent=st.r[0].label+" → "+st.r[1].label+" · "+st.miles+" road miles · "+st.vol.toFixed(1)+" m³"+(st.r[0].approx||st.r[1].approx?" · area estimate":"");
+    $("rows").innerHTML=C.vans.map(function(v){
+      var q=M.price({van:v,miles:st.miles,vol:st.vol,date:st.date,helpers:st.helpers,local:st.local});
+      return '<tr'+(v.id===st.van?' class="sel"':'')+'><td>'+v.name+(st.vol>v.capacityM3?' <span class="note">(too small)</span>':'')+'</td><td class="tab"><b>'+M.money(q.total)+'</b></td><td><button type="button" data-v="'+v.id+'">Use</button></td></tr>';
+    }).join("");
+    $("rows").querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){st.van=b.getAttribute("data-v");draw();});});
+    var v=C.vans.filter(function(x){return x.id===st.van;})[0], q=M.price({van:v,miles:st.miles,vol:st.vol,date:st.date,helpers:st.helpers,local:st.local});
+    var link=C.siteUrl+"?from="+encodeURIComponent($("from").value)+"&to="+encodeURIComponent($("to").value)+"&items="+encodeURIComponent($("items").value)+"&date="+$("date").value+"&helpers="+st.helpers;
+    var name=$("cname").value.trim(); var co=C.company;
+    var who=co.ownerFirstName?co.ownerFirstName+" at M6 Freight":"M6 Freight";
+    var priceLine=st.local?("About "+M.money(q.total)+" (about "+(q.hours)+" hrs at £"+q.hourlyRate+"/hr, all-in: van, driver, fuel, stairs). You pay for the actual time."):("Fixed price: "+M.money(q.total)+(co.vatRegistered?" including VAT":"")+", all-in (van, driver, fuel, blankets, stairs).");
+    $("msg").textContent="Hi"+(name?" "+name:"")+", it's "+who+".\n\n"+
+      $("from").value+" to "+$("to").value+" ("+st.miles+" miles)\n"+
+      $("items").value+"\n"+v.name+(st.helpers?" + "+st.helpers+" helper"+(st.helpers>1?"s":""):"")+", "+st.date.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})+"\n"+
+      priceLine+"\n\n"+
+      "Book in one minute here, no account needed:\n"+link+"\n\n"+
+      "I'll hold this for "+C.pricing.priceHoldHours+" hours. Free date changes up to "+C.pricing.freeChangeHours+"h before. Any questions, just reply.\n"+
+      "(Reply STOP if you'd rather not hear from us again.)";
+    var phone=$("cphone").value.replace(/\D/g,""); if(phone.indexOf("0")===0)phone="44"+phone.slice(1);
+    $("send").href="https://wa.me/"+(phone||"")+"?text="+encodeURIComponent($("msg").textContent);
+  }
+  $("msg").addEventListener("input",function(){var phone=$("cphone").value.replace(/\D/g,"");if(phone.indexOf("0")===0)phone="44"+phone.slice(1);$("send").href="https://wa.me/"+phone+"?text="+encodeURIComponent($("msg").innerText);});
+  $("copy").addEventListener("click",function(){var b=this;try{navigator.clipboard.writeText($("msg").innerText).then(function(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy reply";},1500);},function(){b.textContent="Select and copy";});}catch(x){b.textContent="Select and copy";}});
+})();
+</script>
+</body>
+</html>
