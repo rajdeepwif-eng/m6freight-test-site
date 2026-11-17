@@ -33,3 +33,11 @@ Also added in v2: a photo hero, a "send photos" WhatsApp route, a trade-account 
 
 ## Next step (phase 2)
 Charge the exact total by card at checkout. This needs one small server function (Firebase Function or Stripe Checkout) to create the payment for the right amount. Until then, the "Pay in full" option sends the customer a Stripe link on WhatsApp.
+
+
+## Council fixes (18 Nov 2026)
+- **Bugs fixed:** trip time showing "NaN"; "3 seater sofa" being read as 3 sofas; loads over one Luton now get "send photos" instead of a price; past or blank dates rejected; helpers and the flexible discount reset on each new quote; old results hidden after a failed lookup; UK mobile number check; flexible discount can't be combined with same-day or weekend charges; quote desk uses local dates, reads town names and labels area estimates.
+- **Claims reworded** (gate 6): "clear price" instead of "honest price"; "we aim to reply" instead of a guarantee; padding, driver photo and delivery photo now only show when switched on in config (`paddingStandard`, `dayBeforePhoto`, `proofOfDelivery`); "a message when we're 30 minutes away" instead of a call (never use a hand-held phone while driving).
+- **Legal** (gate 5): the 14-day early-start box was removed until a solicitor decides whether Consumer Contracts Regs reg 28(1)(h) applies; trading disclosures added (registered in England and Wales, a slot for a trading address, complaints contact); booking messages now record the terms version and a timestamp.
+- **Privacy:** fonts are self-hosted (no Google requests); nothing is stored in the browser; the privacy notice has been rewritten (draft).
+- **Deposits:** a trip deposit is the higher of £25 or 20% of the price; `localDeposit` can be set if no-shows become a problem.

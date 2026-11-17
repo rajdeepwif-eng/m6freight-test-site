@@ -5,10 +5,7 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>M6 Freight</title>
-<meta name="description" content="One van, one honest all-in price. Local jobs by the hour, longer trips at a fixed price. Book in 60 seconds, no account. Same-day courier, single items, home moves and trade deliveries.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="description" content="One van, clear all-in prices. Local jobs by the hour, longer trips at a fixed price. Book in a minute, no account. Same-day courier, single items, home moves and trade deliveries.">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -32,8 +29,8 @@
   <div class="wrap">
     <div>
       <a class="ratebar" id="rateBar" hidden href="#" target="_blank" rel="noopener"></a>
-      <h1>One van.<br>One honest price.<br><em>Booked in 60 seconds.</em></h1>
-      <p class="sub" id="heroSub">All-in prices: van, driver, fuel, blankets and stairs included. Nothing to pay until local jobs are done.</p>
+      <h1>One van.<br>One clear price.<br><em>Book in a minute.</em></h1>
+      <p class="sub" id="heroSub">All-in prices with no booking fee: van, driver and fuel included. Fixed prices for trips, a clear hourly rate for local jobs.</p>
       <div class="ways" aria-label="Other ways to get a price">
         <a class="way" id="wayPhotos" href="#" target="_blank" rel="noopener"><b>Send photos</b><span>Fixed price on WhatsApp</span></a>
         <a class="way" href="#trade"><b>Trade account</b><span>Book in one message</span></a>
@@ -122,7 +119,7 @@
         <h3>Need an extra pair of hands?</h3>
         <div class="toggle"><span>Extra people to help carry <span class="note" id="helpHint"></span></span>
           <span class="step"><button type="button" id="hMinus" aria-label="Fewer helpers">−</button><output id="helpers">0</output><button type="button" id="hPlus" aria-label="More helpers">+</button></span></div>
-        <p class="small">Stairs, blankets, straps and fuel are already included.</p>
+        <p class="small">Fuel is included and there's no stairs fee.</p>
       </div>
     </div>
 
@@ -135,6 +132,7 @@
       <ul class="incl" id="bIncl"></ul>
       <div class="lines tab" id="bLines"></div>
       <button class="btn btn-go" id="bookBtn" type="button">Book this van</button>
+      <div class="hold" id="oversize" hidden style="border-left:4px solid var(--red)">That's more than one Luton van load. Send us photos on WhatsApp and we'll price it as two trips or a bigger vehicle.</div>
       <a class="btn btn-wa" id="waPrice" href="#" target="_blank" rel="noopener">Hold this price on WhatsApp</a>
       <div class="hold" id="bHold"></div>
     </aside>
@@ -161,11 +159,12 @@
       <div class="consent" id="earlyBox" hidden>
         <label class="switch"><input type="checkbox" id="cEarly"> <span>Please start my job within the 14-day cancellation period. I understand that if I cancel after the job has started I pay for the work done. <a href="terms.html" target="_blank" rel="noopener">Details</a></span></label>
       </div>
+      <p class="small" id="cancelInfo"></p>
       <label class="switch"><input type="checkbox" id="cTerms" required> <span>I agree to the <a href="terms.html" target="_blank" rel="noopener">booking terms</a>.</span></label>
       <label class="switch"><input type="checkbox" id="cUpdates"> <span>Send me booking updates and the driver's ETA on WhatsApp (optional; reply STOP any time).</span></label>
       <p class="err" id="coErr" role="alert" hidden></p>
-      <button class="btn btn-go" type="submit">Confirm booking</button>
-      <p class="note">Card payments open a secure Stripe page. We never see or store your card details.</p>
+      <button class="btn btn-go" type="submit">Send booking request</button>
+      <p class="note" id="cardNote">Card payments open a secure Stripe page. We never see or store your card details.</p>
     </form>
     <aside class="buy" aria-label="Booking summary">
       <div class="note">Your booking</div>
@@ -180,7 +179,7 @@
 <section id="done" hidden>
   <div class="wrap" style="display:grid;gap:18px;max-width:760px">
     <div class="panel">
-      <p class="note">Booking request received</p>
+      <p class="note">Almost done: send your request</p>
       <div class="refbox" id="dRef"></div>
       <p id="dLine"></p>
       <div style="display:grid;gap:8px" id="dActions"></div>
@@ -219,11 +218,11 @@
     <div style="display:grid;gap:14px">
       <h2 style="margin:0">Moves and single items</h2>
       <ul class="ticks">
-        <li>Every item wrapped in blankets and strapped down</li>
-        <li>Any number of stairs at no extra charge</li>
+        <li>Items strapped down, blankets for furniture</li>
+        <li>No stairs fee</li>
         <li>Sofa from Facebook Marketplace? Send the listing and we'll collect it</li>
-        <li>Driver's photo and van details the day before</li>
-        <li>Photo when it's delivered</li>
+        <li>Your arrival window the day before</li>
+        <li>A message when we're about 30 minutes away</li>
       </ul>
       <a class="btn btn-go" href="#top" style="width:max-content">Get my price</a>
     </div>
@@ -252,9 +251,9 @@
       <h2 style="margin:0">Trade account</h2>
       <ul class="ticks">
         <li>Book with one WhatsApp message: from, to, what, when</li>
-        <li>Same rates every time, no re-quoting</li>
+        <li>Agreed account rates</li>
         <li id="bizInv">Monthly invoice</li>
-        <li>Photo and signature proof of every delivery</li>
+        <li>Delivery confirmation on WhatsApp</li>
         <li>For furniture and appliance shops, builders' merchants, estate agents and workshops</li>
       </ul>
       <a class="btn btn-go" id="bizWa" href="#" target="_blank" rel="noopener" style="width:max-content">Open a trade account</a>
@@ -280,7 +279,7 @@
 <section class="band" id="faq">
   <div class="wrap" style="max-width:820px">
     <h2>Questions</h2>
-    <details><summary>What's included in the price?</summary><p>The van, the driver, fuel, blankets, straps and any number of stairs. Extra people to carry are optional and priced before you book.</p></details>
+    <details><summary>What's included in the price?</summary><p>The van, the driver, fuel and straps, with no booking fee and no stairs fee. On local hourly jobs you pay for the time we actually take. Extra people to carry are optional and priced before you book.</p></details>
     <details><summary>How does hourly pricing work for local jobs?</summary><p id="faqHourly"></p></details>
     <details><summary>Do I need an account?</summary><p>No. Book with your name, mobile and addresses.</p></details>
     <details><summary>How do I pay?</summary><p id="faqPay"></p></details>
@@ -306,7 +305,7 @@
   <div class="wrap">
     <div><h3>M6 Freight</h3><p id="fCompany"></p></div>
     <div><h3>Contact</h3><p id="fContact"></p></div>
-    <div><h3>Info</h3><p><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a><br><a href="quote.html">Staff quote desk</a></p></div>
+    <div><h3>Info</h3><p><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a></p></div>
   </div>
 </footer>
 

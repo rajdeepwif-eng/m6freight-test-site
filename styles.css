@@ -1,3 +1,11 @@
+/* Fonts self-hosted (no Google requests). Barlow: SIL Open Font License. */
+@font-face{font-family:"Barlow";font-style:normal;font-weight:400;font-display:swap;src:url("fonts/barlow-latin-400-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:500;font-display:swap;src:url("fonts/barlow-latin-500-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:600;font-display:swap;src:url("fonts/barlow-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow";font-style:normal;font-weight:700;font-display:swap;src:url("fonts/barlow-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:600;font-display:swap;src:url("fonts/barlow-condensed-latin-600-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:700;font-display:swap;src:url("fonts/barlow-condensed-latin-700-normal.woff2") format("woff2")}
+@font-face{font-family:"Barlow Condensed";font-style:normal;font-weight:800;font-display:swap;src:url("fonts/barlow-condensed-latin-800-normal.woff2") format("woff2")}
 /* M6 Freight — road-sign world: motorway blue panel, sign-yellow action, condensed highway type. Single light theme by choice. */
 :root{
   --blue:#0b4ea2; --blue-deep:#08356f; --blue-soft:#e6eef9;
@@ -16,7 +24,8 @@ a{color:var(--blue)}
 h1,h2,h3{font-family:var(--display);line-height:1.02;margin:0;text-wrap:balance;letter-spacing:.005em}
 p{margin:0}
 button,input,select,textarea{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.hero :focus-visible,.top :focus-visible,.biz :focus-visible,footer :focus-visible{outline-color:var(--yellow)}
 .wrap{max-width:1160px;margin:0 auto;padding:0 20px}
 .tab{font-variant-numeric:tabular-nums}
 
@@ -225,3 +234,6 @@ body.has-bar .wa{bottom:84px}
 .steps b{font-family:var(--display);font-size:1.3rem}
 #areaTowns .chip{cursor:default}
 .ratebar[hidden],[hidden]{display:none!important}
+
+@media (max-width:560px){.wa{display:none}}
+.switch input{width:20px;height:20px;flex:none}

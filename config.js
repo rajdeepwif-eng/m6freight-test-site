@@ -11,11 +11,13 @@ window.M6_CONFIG = {
     legalName: "M6 FREIGHTUK LTD",              // CONFIRM
     companyNumber: "17059854",                   // CONFIRM
     registeredOffice: "128 City Road, London, EC1V 2NX", // CONFIRM
+    registeredIn: "England and Wales",
+    tradingAddress: "",                          // CONFIRM: a real geographic address customers can write to (required by the E-Commerce Regs if the registered office is a formation/virtual address)
     phoneDisplay: "07301 519319",
     phoneIntl: "447301519319",
     email: "info@m6freightuk.co.uk",             // CONFIRM
     hours: "7am–9pm, 7 days",
-    replyPromiseMinutes: 5,                      // only if you can always keep it
+    replyPromiseMinutes: 15,                     // "we aim to reply within X minutes" — never reply while driving
     ownerDriven: true,                           // CONFIRM: true shows "The owner drives your job"
     ownerFirstName: "",                          // e.g. "Gurpreet" — shown on the site and WhatsApp messages
     vatRegistered: false,                        // CONFIRM
@@ -25,7 +27,9 @@ window.M6_CONFIG = {
     googleRating: "",                            // REAL rating only, e.g. "4.9" — shown once count >= 5
     googleReviewCount: "",                       // REAL count only
     arrivalWindowHours: 2,                       // arrival window you promise
-    paddingStandard: true,                       // CONFIRM: blankets, wrap, door + floor protectors on every job (buy the kit first)
+    paddingStandard: false,                      // true ONLY once you own blankets, wrap, door + floor protectors and use them on every job
+    dayBeforePhoto: true,                        // CONFIRM: you WhatsApp a driver/van photo the day before every job
+    proofOfDelivery: true,                       // CONFIRM: you photograph every delivery and send it
     damagePromise: "",                           // CONFIRM with insurer, e.g. "If we break it, we repair or replace it up to £500" — "" hides it
     claimReplyHours: 0,                          // e.g. 48 = "we reply to any damage report within 48h" — 0 hides it
     dbsChecked: false,                           // true only if the driver holds a current DBS check
@@ -54,7 +58,8 @@ window.M6_CONFIG = {
     minimumHours: 2,           // local hourly jobs
     incrementMinutes: 15,
     localMph: 20,              // town driving, for local time estimates
-    loadMinutesPerM3: 12,      // loading + unloading time per m³, for estimates
+    loadMinutesPerM3: 12,      // loading + unloading time per m³, for local estimates
+    loadMinutes: 30,           // loading + unloading allowance for trip time estimates
     helperHourly: 20,          // extra person, local jobs (per hour)
     helperTripFee: 45,         // extra person, fixed-price trips (per job)
     sameDayPct: 15,
@@ -71,12 +76,18 @@ window.M6_CONFIG = {
   returnTrips: [],
 
   payments: {
-    tripDeposit: 25,                 // refundable deposit to hold a fixed-price trip
+    tripDeposit: 25,                 // minimum deposit for a fixed-price trip
+    tripDepositPct: 20,              // deposit = the higher of tripDeposit or this % of the price (protects a day's work)
+    localDeposit: 0,                 // 0 = no deposit on local jobs (Buddy style). Set e.g. 20 if no-shows become a problem
     depositPaymentLink: "",          // CONFIRM: Stripe Payment Link for the deposit
     localPayAfter: true,             // local hourly jobs: nothing to pay until the job's done
     payMethods: "card, Apple Pay, Google Pay or bank transfer",
     businessInvoiceDays: 30
   },
+
+  /* Cancellation: SOLICITOR TO CONFIRM. Dated van jobs may fall outside the 14-day cancellation right
+     (Consumer Contracts Regs 2013 reg 28(1)(h)). This text is shown before booking. */
+  cancellationPolicy: "Change your date free up to 48 hours before. Cancellation terms are in our booking terms (being finalised).",
 
   leadWebhookUrl: "",                // optional n8n / Make / Zapier webhook for every price + booking
   siteUrl: "https://rajdeepwif-eng.github.io/m6freight-test-site/"

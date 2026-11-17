@@ -33,7 +33,7 @@
     luton:"LU",watford:"WD",huddersfield:"HD",halifax:"HX",wakefield:"WF",doncaster:"DN",sunderland:"SR",durham:"DH",middlesbrough:"TS",
     carlisle:"CA",lancaster:"LA",lincoln:"LN",wigan:"WN",oldham:"OL",blackburn:"BB",harrogate:"HG",salisbury:"SP",bournemouth:"BH",
     colchester:"CO",chelmsford:"CM",southend:"SS",canterbury:"CT",maidstone:"ME",guildford:"GU",crawley:"RH",tunbridge:"TN",
-    "west bromwich":"B","sutton coldfield":"B",solihull:"B",cannock:"WS",stafford:"ST",lichfield:"WS",tamworth:"B",nuneaton:"CV",rugby:"CV"
+    "west bromwich":"B",kidderminster:"DY",bridgnorth:"WV",basingstoke:"RG","newcastle-under-lyme":"ST","newcastle under lyme":"ST",stourbridge:"DY",halesowen:"B",redditch:"B",bromsgrove:"B",burton:"DE","sutton coldfield":"B",solihull:"B",cannock:"WS",stafford:"ST",lichfield:"WS",tamworth:"B",nuneaton:"CV",rugby:"CV"
   };
 
   var cache = {};
@@ -47,7 +47,7 @@
     if (m && AREAS[m[1]]) return { lat: AREAS[m[1]][0], lng: AREAS[m[1]][1], label: s.toUpperCase(), approx: true };
     var keys = Object.keys(TOWNS).sort(function (a, b) { return b.length - a.length; });
     for (var i = 0; i < keys.length; i++) {
-      if (s.indexOf(keys[i]) !== -1) {
+      if (new RegExp("(^|[^a-z])" + keys[i].replace(/[-]/g, "\\-") + "($|[^a-z])").test(s)) {
         var a = AREAS[TOWNS[keys[i]]];
         return { lat: a[0], lng: a[1], label: keys[i].replace(/\b\w/g, function (c) { return c.toUpperCase(); }), approx: true };
       }
@@ -125,7 +125,8 @@
       var s = raw.replace(/[^a-z0-9 \-]/g, " ").replace(/\s+/g, " ").trim();
       if (!s) return;
       var qty = 1, m = s.match(/^(\d+)\s*x?\s*/);
-      if (m) { qty = parseInt(m[1], 10) || 1; s = s.slice(m[0].length); }
+      var unitAfter = m && /^(-?\s*)(seater|seat|inch|in\b|"|kg|ft|foot|feet|door|piece|pc|drawer|litre|ltr|l\b|cm|mm|m\b|ton|tonne|burner|ring|bed(room)?s?\b)/.test(s.slice(m[0].length));
+      if (m && !unitAfter) { qty = parseInt(m[1], 10) || 1; s = s.slice(m[0].length); }
       else {
         var w = s.split(" ")[0];
         if (WORDNUM[w]) { qty = WORDNUM[w]; s = s.slice(w.length).trim(); if (s.indexOf("of ") === 0) s = s.slice(3); }
@@ -133,7 +134,7 @@
       var m2 = s.match(/\s+x\s*(\d+)$/); if (m2) { qty = parseInt(m2[1], 10); s = s.slice(0, m2.index); }
       var hit = null;
       for (var i = 0; i < ITEMS.length; i++) { if ((" " + s + " ").indexOf(" " + ITEMS[i][0]) !== -1 || s.indexOf(ITEMS[i][0]) !== -1) { hit = ITEMS[i]; break; } }
-      if (hit) out.push({ name: s || hit[0], qty: Math.min(qty, 500), m3: hit[1] * Math.min(qty, 500), heavy: !!hit[2], known: true });
+      if (hit) out.push({ name: (s.length > hit[0].length + 12 ? hit[0] : s) || hit[0], qty: Math.min(qty, 500), m3: hit[1] * Math.min(qty, 500), heavy: !!hit[2], known: true });
       else out.push({ name: s, qty: Math.min(qty, 500), m3: 0.3 * Math.min(qty, 500), heavy: false, known: false });
     });
     // merge duplicates
@@ -168,9 +169,9 @@
       lines.push({ label: v.name + " · " + o.miles + " miles, all-in", amount: total });
       if (o.helpers) { var h = o.helpers * P.helperTripFee; lines.push({ label: o.helpers + " extra " + (o.helpers > 1 ? "people" : "person"), amount: h }); total += h; }
     }
-    if (isToday(d)) { var sd = total * P.sameDayPct / 100; lines.push({ label: "Same-day", amount: sd }); total += sd; }
+    if (!o.flexible && isToday(d)) { var sd = total * P.sameDayPct / 100; lines.push({ label: "Same-day", amount: sd }); total += sd; }
     var day = d.getDay();
-    if (day === 0 || day === 6) { var we = total * P.weekendPct / 100; lines.push({ label: "Weekend", amount: we }); total += we; }
+    if (!o.flexible && (day === 0 || day === 6)) { var we = total * P.weekendPct / 100; lines.push({ label: "Weekend", amount: we }); total += we; }
     if (o.flexible) { var fx = -total * P.flexiblePct / 100; lines.push({ label: "Flexible-date saving", amount: fx }); total += fx; }
     lines.forEach(function (l) { l.amount = Math.round(l.amount); });
     total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
@@ -180,7 +181,7 @@
 
   function etaText(miles, date) {
     var P = C.pricing;
-    var mins = Math.round(miles / P.avgMph * 60 + P.loadMinutes);
+    var mins = Math.round(miles / P.avgMph * 60 + (P.loadMinutes || 30));
     var h = Math.floor(mins / 60), m = mins % 60;
     return (h ? h + "h " : "") + m + "m door to door";
   }
@@ -194,5 +195,5 @@
   }
 
   window.M6 = { locate: locate, miles: miles, readItems: readItems, volume: volume, needsTwo: needsTwo, bestVan: bestVan,
-    price: price, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
+    price: price, maxM3: function () { return C.vans[C.vans.length - 1].capacityM3 * 0.9; }, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
 })();

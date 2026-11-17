@@ -1,6 +1,7 @@
 /* M6 Freight customer site — v2 (all-in hourly for local, fixed for trips) */
 (function () {
   "use strict";
+  var TERMS_VERSION = "draft 2026-11-18";
   var C = window.M6_CONFIG, M = window.M6, co = C.company, P = C.pricing, PAY = C.payments;
   var $ = function (id) { return document.getElementById(id); };
   var S = { from: null, to: null, fromText: "", toText: "", miles: 0, items: [], vol: 0, vanId: null,
@@ -14,6 +15,9 @@
   function fmtDate(d) { return d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" }); }
   function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
   function todayAllowed() { return new Date().getHours() < P.sameDayCutoffHour; }
+  function earliest() { var d = dayStart(new Date()); if (!todayAllowed()) d.setDate(d.getDate() + 1); return d; }
+  function plural(n, w) { return n + " " + w + (n === 1 ? "" : "s"); }
+  function tripDeposit(total) { return Math.max(PAY.tripDeposit, Math.round(total * (PAY.tripDepositPct || 0) / 100)); }
   function hrs(h) { var whole = Math.floor(h), m = Math.round((h - whole) * 60); return whole + "h" + (m ? " " + m + "m" : ""); }
 
   /* ---------- page text from settings ---------- */
@@ -26,12 +30,12 @@
   $("bizWa").href = wa("Hi M6 Freight, I'd like a trade account. Company: ... Typical jobs: ...");
   $("bizInv").textContent = "Monthly invoice, " + PAY.businessInvoiceDays + "-day terms (approved accounts)";
   $("flexPct").textContent = P.flexiblePct;
-  var promises = ["No account needed", "Reply within " + co.replyPromiseMinutes + " min · " + co.hours, "Free date changes up to " + P.freeChangeHours + "h before"];
+  var promises = ["No account needed", "We aim to reply within " + co.replyPromiseMinutes + " min · " + co.hours, "Free date changes up to " + P.freeChangeHours + "h before"];
   $("promises").innerHTML = promises.map(function (p) { return '<span class="pill">' + esc(p) + "</span>"; }).join("");
-  var localTxt = "Jobs within " + C.base.localRadiusMiles + " miles of " + C.base.place + ": from £" + minRate + "/hr for van and driver, fuel and stairs included. " + P.minimumHours + "-hour minimum, then " + P.incrementMinutes + "-minute steps. The clock starts when we arrive at your door.";
+  var localTxt = "Jobs within " + C.base.localRadiusMiles + " miles of " + C.base.place + " are charged by the hour: from £" + minRate + "/hr on weekdays for van and driver, fuel included (+" + P.weekendPct + "% at weekends, +" + P.sameDayPct + "% for same-day; extra people £" + P.helperHourly + "/hr each). " + P.minimumHours + "-hour minimum, then " + P.incrementMinutes + "-minute steps. The clock starts when we arrive at your door and stops when the job's done. There's no fee for stairs; they just take the time they take.";
   $("faqHourly").textContent = localTxt + " We show you an estimate before you book; you pay for the actual time.";
-  $("faqPay").textContent = "Local jobs: nothing until the job's done (" + PAY.payMethods + "). Fixed-price trips: a £" + PAY.tripDeposit + " refundable deposit holds the slot, the rest on the day. Trade accounts pay by invoice.";
-  $("faqChange").textContent = "Change your date free up to " + P.freeChangeHours + " hours before. Your cancellation rights are set out in the booking terms.";
+  $("faqPay").textContent = "Local jobs: " + (PAY.localDeposit ? "a £" + PAY.localDeposit + " deposit, the rest" : "nothing up front; you pay") + " when the job's done (" + PAY.payMethods + "). Fixed-price trips: a deposit of " + (PAY.tripDepositPct ? PAY.tripDepositPct + "% (at least £" + PAY.tripDeposit + ")" : "£" + PAY.tripDeposit) + " holds the slot, the rest on the day. Trade accounts pay by invoice.";
+  $("faqChange").textContent = C.cancellationPolicy;
   if (co.goodsInTransitCover) $("faqIns").textContent = "Yes. Goods in transit are covered up to " + co.goodsInTransitCover + " per job" + (co.publicLiabilityCover ? ", with " + co.publicLiabilityCover + " public liability" : "") + ". Tell us about anything worth more before you book.";
   var chUrl = "https://find-and-update.company-information.service.gov.uk/company/" + co.companyNumber;
   $("faqReal").innerHTML = "We're " + esc(co.legalName) + ", company number " + esc(co.companyNumber) + '. You can check us on <a href="' + chUrl + '" target="_blank" rel="noopener">Companies House</a>' + (co.googleReviewsUrl ? ' and read our <a href="' + esc(co.googleReviewsUrl) + '" target="_blank" rel="noopener">Google reviews</a>' : "") + ".";
@@ -39,14 +43,14 @@
 
   /* Why people pick us: only promises switched on in config */
   var R = [
-    ["One price, nothing added", "Van, driver, fuel, blankets, straps and any stairs are in the price. Nothing gets added at the end."],
-    ["No deposit on local jobs", "Book in about a minute and pay when the job's done. Free date changes up to " + P.freeChangeHours + " hours before."],
-    [co.arrivalWindowHours + "-hour arrival window", "Plus a call about 30 minutes out and a live map link on WhatsApp." + (co.noCancellationsMonths ? " No cancellations by us in the last " + co.noCancellationsMonths + " months." : "")]
+    ["Clear, all-in pricing", "Van, driver and fuel are in the price, with no booking fee and no stairs fee. Trips are one fixed price; local jobs are the hourly rate you see, for the time we actually take."],
+    [PAY.localDeposit ? "Small deposit, pay the rest after" : "No deposit on local jobs", "Request in about a minute and pay when the job's done. Free date changes up to " + P.freeChangeHours + " hours before."],
+    [co.arrivalWindowHours + "-hour arrival window", "Plus a WhatsApp message when we're about 30 minutes away." + (co.noCancellationsMonths ? " No cancellations by us in the last " + co.noCancellationsMonths + " months." : "")]
   ];
-  if (co.ownerDriven) R.push(["The owner drives your job", "The person you message is the person who turns up" + (co.dbsChecked ? ", DBS checked." : ".") + " Driver photo sent the day before."]);
+  if (co.ownerDriven) R.push(["The owner drives your job", "The person you message is the person who turns up" + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
   if (co.paddingStandard) R.push(["Padded, every time", "Blankets and wrap on every piece, door-frame and floor protection in your home. Standard, not an extra."]);
   if (co.damagePromise) R.push(["Our damage promise", co.damagePromise + (co.claimReplyHours ? " We reply to any damage report within " + co.claimReplyHours + " hours." : "")]);
-  else R.push(["Proof at every step", "Photos at loading and at delivery, sent to you on WhatsApp."]);
+  else if (co.proofOfDelivery) R.push(["Proof at every step", "Photos at loading and at delivery, sent to you on WhatsApp."]);
   if (co.goodsInTransitCover) R.push(["Insured", "Goods in transit cover up to " + co.goodsInTransitCover + (co.publicLiabilityCover ? ", public liability " + co.publicLiabilityCover : "") + "."]);
   R.push(["A real, registered company", esc(co.legalName) + ", company no. " + esc(co.companyNumber) + '. <a href="' + chUrl + '" target="_blank" rel="noopener">Check us on Companies House</a>.']);
   $("reasonCards").innerHTML = R.map(function (r) { return '<div class="tile reason"><h3>' + esc(r[0]) + "</h3><p>" + (r[1].indexOf("<a ") > -1 ? r[1] : esc(r[1])) + "</p></div>"; }).join("");
@@ -62,11 +66,11 @@
   /* How a job actually goes */
   var steps = [
     ["Get your price", "Postcodes and a list, typed like a text, or photos on WhatsApp. About a minute."],
-    ["Book", "Name, mobile and addresses. No account. " + (PAY.localPayAfter ? "Local jobs: no deposit." : "") ],
-    ["We confirm", "A real person confirms on WhatsApp within " + co.replyPromiseMinutes + " minutes (" + co.hours + ")."],
-    ["Day before", "Driver photo, van and your " + co.arrivalWindowHours + "-hour arrival window."],
-    ["On the day", "Call 30 minutes out. Everything padded, loaded, strapped and delivered."],
-    ["Done", "Photo when it's delivered, then pay. We'll ask how we did."]
+    ["Request", "Name, mobile and addresses. No account. " + (PAY.localDeposit ? "" : "Local jobs: no deposit.")],
+    ["We confirm", "A real person confirms on WhatsApp. We aim to reply within " + co.replyPromiseMinutes + " minutes (" + co.hours + ")."],
+    ["Day before", (co.dayBeforePhoto ? "Driver photo, van and " : "Your ") + co.arrivalWindowHours + "-hour arrival window."],
+    ["On the day", "A message when we're about 30 minutes away. " + (co.paddingStandard ? "Everything padded, loaded, strapped and delivered." : "Loaded, strapped and delivered.")],
+    ["Done", (co.proofOfDelivery ? "Photo when it's delivered, then pay." : "Check everything's arrived, then pay.") + " We'll ask how we did."]
   ];
   $("howSteps").innerHTML = steps.map(function (s) { return "<li><b>" + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></li>"; }).join("");
   $("padding").hidden = !co.paddingStandard;
@@ -86,8 +90,8 @@
       return '<div class="trip"><b>' + esc(t.from) + " → " + esc(t.to) + '</b><span class="small">' + esc(fmtDate(d)) + " · " + esc((C.vans.filter(function (v) { return v.id === t.van; })[0] || {}).name || "Van") + '</span><span class="tp tab">' + M.money(t.price) + '</span><a class="btn btn-wa" href="' + wa("Hi M6 Freight, I'd like the return trip " + t.from + " → " + t.to + " on " + fmtDate(d) + " at " + M.money(t.price) + ".") + '" target="_blank" rel="noopener">Book this trip</a></div>';
     }).join("");
   }
-  $("fCompany").innerHTML = esc(co.legalName) + "<br>Company no. " + esc(co.companyNumber) + "<br>Registered office: " + esc(co.registeredOffice) + (co.vatRegistered ? "" : "<br>Not VAT registered");
-  $("fContact").innerHTML = 'Phone / WhatsApp: <a href="tel:+' + co.phoneIntl + '">' + esc(co.phoneDisplay) + '</a><br>Email: <a href="mailto:' + esc(co.email) + '">' + esc(co.email) + "</a><br>" + esc(co.hours);
+  $("fCompany").innerHTML = esc(co.legalName) + ", registered in " + esc(co.registeredIn) + "<br>Company no. " + esc(co.companyNumber) + "<br>Registered office: " + esc(co.registeredOffice) + (co.tradingAddress ? "<br>Trading address: " + esc(co.tradingAddress) : "") + (co.vatRegistered ? "" : "<br>Not VAT registered");
+  $("fContact").innerHTML = 'Phone / WhatsApp: <a href="tel:+' + co.phoneIntl + '">' + esc(co.phoneDisplay) + '</a><br>Email: <a href="mailto:' + esc(co.email) + '">' + esc(co.email) + "</a><br>" + esc(co.hours) + "<br>Complaints: email us and we'll reply within 5 working days.";
 
   /* ---------- quote form ---------- */
   var pick = $("pickDate"); pick.min = iso(new Date());
@@ -101,7 +105,12 @@
   function chosenDate() {
     var w = document.querySelector('input[name="when"]:checked').value, d = dayStart(new Date());
     if (w === "tomorrow") d.setDate(d.getDate() + 1);
-    if (w === "pick" && pick.value) { var p = pick.value.split("-"); d = new Date(+p[0], +p[1] - 1, +p[2]); }
+    if (w === "pick") {
+      var p = (pick.value || "").split("-");
+      if (p.length !== 3 || isNaN(+p[0])) return null;
+      d = new Date(+p[0], +p[1] - 1, +p[2]);
+    }
+    if (d < earliest()) return null;
     return d;
   }
 
@@ -109,23 +118,27 @@
     e.preventDefault();
     var err = $("qErr"); err.hidden = true;
     var f = $("from").value.trim(), t = $("to").value.trim();
-    if (!f || !t) { err.textContent = "Add where we collect from and where it's going."; err.hidden = false; return; }
+    function fail(m) { err.textContent = m; err.hidden = false; $("results").hidden = true; $("bar").classList.remove("on"); document.body.classList.remove("has-bar"); }
+    if (!f || !t) { fail("Add where we collect from and where it's going."); return; }
+    var when = chosenDate();
+    if (!when) { fail("Choose a date from " + fmtDate(earliest()) + " onwards."); return; }
     if (!$("items").value.trim()) $("items").value = "parcel";
     var btn = $("goBtn"); btn.textContent = "Working out your price…"; btn.disabled = true;
     Promise.all([M.locate(f), M.locate(t), BASE ? Promise.resolve(BASE) : M.locate(C.base.place)]).then(function (r) {
       btn.textContent = "Show my price →"; btn.disabled = false;
-      if (!r[0] || !r[1]) { err.textContent = "We couldn't find " + (!r[0] ? '"' + f + '"' : '"' + t + '"') + ". Try a postcode, e.g. WV1 1AA."; err.hidden = false; return; }
+      if (!r[0] || !r[1]) { fail("We couldn't find " + (!r[0] ? '"' + f + '"' : '"' + t + '"') + ". Try a postcode, e.g. WV1 1AA."); return; }
       BASE = r[2];
       S.from = r[0]; S.to = r[1]; S.fromText = f; S.toText = t;
       S.miles = M.miles(r[0], r[1]);
       S.local = !!BASE && M.miles(BASE, r[0]) <= C.base.localRadiusMiles && M.miles(BASE, r[1]) <= C.base.localRadiusMiles;
       S.items = M.readItems($("items").value); S.vol = M.volume(S.items);
       S.vanId = M.bestVan(S.vol).id;
-      S.date = chosenDate();
-      if (!S.helpersTouched) S.helpers = M.needsTwo(S.items) ? 1 : 0;
+      S.date = when;
+      S.helpersTouched = false; S.helpers = M.needsTwo(S.items) ? 1 : 0;
+      if (S.pendingHelpers) { S.helpers = S.pendingHelpers; S.helpersTouched = true; S.pendingHelpers = 0; }
+      S.flexible = false; $("flex").checked = false;
       showResults(true);
       M.postLead({ type: "price_viewed", from: f, to: t, miles: S.miles, local: S.local, items: $("items").value, date: iso(S.date), price: current().total, van: S.vanId, at: new Date().toISOString() });
-      try { localStorage.setItem("m6_last", JSON.stringify({ f: f, t: t, i: $("items").value })); } catch (x) {}
     });
   });
 
@@ -153,6 +166,10 @@
 
   function renderAll() {
     var v = van(), best = M.bestVan(S.vol), q = current();
+    var oversize = S.vol > M.maxM3();
+    $("bookBtn").hidden = oversize; $("barBook").hidden = oversize;
+    $("oversize").hidden = !oversize;
+    $("flex").disabled = M.isToday(S.date); if (M.isToday(S.date)) S.flexible = false;
     var pct = Math.min(100, Math.round(S.vol / v.capacityM3 * 100));
     $("fillBar").style.width = pct + "%";
     $("fillNote").textContent = "Fills about " + pct + "% of a " + v.name.toLowerCase() + " (" + v.capacityM3 + " m³).";
@@ -186,7 +203,8 @@
       ? "Estimate for about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr. You pay for the actual time, in " + P.incrementMinutes + "-min steps." + (co.vatRegistered ? " Inc VAT." : "")
       : "Fixed price for the whole job" + (co.vatRegistered ? ", including VAT." : ". No VAT to add.");
     $("bWhen").textContent = (M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days, we confirm the day)" : "") + (S.local ? "" : " · about " + M.etaText(S.miles));
-    var incl = ["Van and driver, only your goods on board", "Fuel, blankets, straps, any stairs", "Driver photo the day before, ETA on the day", "Photo when delivered"];
+    var incl = ["Van and driver, only your goods on board", "Fuel included, no booking or stairs fee", (co.dayBeforePhoto ? "Driver photo the day before, " : "Arrival window the day before, ") + "message when we're 30 min away"];
+    if (co.proofOfDelivery) incl.push("Photo when delivered");
     if (co.goodsInTransitCover) incl.splice(2, 0, "Goods covered to " + co.goodsInTransitCover);
     $("bIncl").innerHTML = incl.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
     $("bLines").innerHTML = q.lines.length > 1 ? q.lines.map(function (l) { return "<div><span>" + esc(l.label) + "</span><span>" + (l.amount < 0 ? "−" : "") + M.money(Math.abs(l.amount)) + "</span></div>"; }).join("") : "";
@@ -210,11 +228,11 @@
   $("hPlus").addEventListener("click", function () { S.helpersTouched = true; S.helpers = Math.min(3, S.helpers + 1); renderAll(); });
 
   function summaryText(q, extra) {
-    var itemsTxt = S.items.map(function (i) { return (i.qty > 1 ? i.qty + " x " : "") + i.name; }).join(", ");
+    var itemsTxt = S.items.map(function (i) { return (i.qty > 1 ? i.qty + " × " : "") + i.name; }).join(", ");
     return [
       (S.ref ? "Ref " + S.ref + "\n" : "") + S.fromText + " → " + S.toText + " (" + S.miles + " miles)",
       "Items: " + itemsTxt,
-      "Van: " + van().name + (S.helpers ? " + " + S.helpers + " helper(s)" : ""),
+      "Van: " + van().name + (S.helpers ? " + " + plural(S.helpers, "helper") : ""),
       "Date: " + fmtDate(S.date) + (S.flexible ? " (flexible ±2 days)" : ""),
       S.local ? "Price: approx " + M.money(q.total) + " (about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr, all-in)" : "Price: " + M.money(q.total) + " fixed, all-in"
     ].concat(extra || []).join("\n");
@@ -227,18 +245,21 @@
     $("checkout").hidden = false;
     $("sPrice").textContent = (S.local ? "≈" : "") + M.money(q.total);
     $("sSummary").innerHTML = "<div><b>" + esc(S.from.label) + "</b> → <b>" + esc(S.to.label) + "</b></div><div>" + esc(van().name) + " · " + S.miles + " miles</div><div>" + esc(M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days)" : "") + "</div><div class='note'>" + (S.local ? "Hourly estimate, all-in" : "Fixed price, all-in") + "</div>";
+    var dep = tripDeposit(q.total);
     var opts = S.local ? [
-      { id: "after", t: "Pay when the job's done", tag: "No deposit", d: "Pay by " + PAY.payMethods + " at the end, for the actual time.", a: "£0 now" },
+      { id: "after", t: PAY.localDeposit ? "£" + PAY.localDeposit + " deposit, rest when done" : "Pay when the job's done", tag: PAY.localDeposit ? "" : "No deposit", d: "Pay by " + PAY.payMethods + " at the end, for the actual time.", a: PAY.localDeposit ? "£" + PAY.localDeposit + " now" : "£0 now" },
       { id: "invoice", t: "Trade account invoice", d: PAY.businessInvoiceDays + "-day terms for approved trade accounts.", a: "Account" }
     ] : [
-      { id: "deposit", t: "£" + PAY.tripDeposit + " refundable deposit now", tag: "Holds your slot", d: "Card, Apple Pay or Google Pay on a secure Stripe page. The remaining " + M.money(Math.max(0, q.total - PAY.tripDeposit)) + " on the day.", a: M.money(PAY.tripDeposit) },
+      { id: "deposit", t: M.money(dep) + " deposit now", tag: "Holds your slot", d: "Card, Apple Pay or Google Pay on a secure Stripe page. The remaining " + M.money(Math.max(0, q.total - dep)) + " on the day. Refund terms are in the booking terms.", a: M.money(dep) },
       { id: "full", t: "Pay in full", d: "We send a secure payment link for the exact amount on WhatsApp.", a: M.money(q.total) },
       { id: "invoice", t: "Trade account invoice", d: PAY.businessInvoiceDays + "-day terms for approved trade accounts.", a: "Account" }
     ];
     $("payOpts").innerHTML = opts.map(function (o, i) {
       return '<input type="radio" name="pay" id="p_' + o.id + '" value="' + o.id + '"' + (i === 0 ? " checked" : "") + '><label for="p_' + o.id + '"><span><b>' + esc(o.t) + (o.tag ? '<span class="tagb">' + esc(o.tag) + "</span>" : "") + '</b><span class="note">' + esc(o.d) + '</span></span><span class="amt tab">' + esc(o.a) + "</span></label>";
     }).join("");
-    $("earlyBox").hidden = !within14(S.date);
+    $("earlyBox").hidden = true;
+    $("cancelInfo").textContent = C.cancellationPolicy;
+    $("cardNote").hidden = S.local && !PAY.localDeposit;
     $("cAddrFrom").placeholder = "House number, street — " + S.fromText;
     $("cAddrTo").placeholder = "House number, street — " + S.toText;
     $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -253,37 +274,40 @@
     var err = $("coErr"); err.hidden = true;
     var name = $("cName").value.trim(), phone = $("cPhone").value.trim(), email = $("cEmail").value.trim();
     var aF = $("cAddrFrom").value.trim(), aT = $("cAddrTo").value.trim(), missing = [];
-    if (!name) missing.push("name"); if (phone.replace(/\D/g, "").length < 10) missing.push("mobile number");
+    var digits = phone.replace(/\D/g, "");
+    if (!name) missing.push("name");
+    if (!/^(07\d{9}|447\d{9})$/.test(digits)) missing.push("UK mobile number (07…)");
     if (!aF) missing.push("collection address"); if (!aT) missing.push("delivery address");
-    if (!$("earlyBox").hidden && !$("cEarly").checked) missing.push("request to start within 14 days (tick the box, or pick a later date)");
     if (!$("cTerms").checked) missing.push("agreement to the booking terms");
     if (missing.length) { err.textContent = "Please add your " + missing.join(", ") + "."; err.hidden = false; return; }
     var pay = document.querySelector('input[name="pay"]:checked').value, q = current();
     S.ref = M.ref();
-    var payTxt = { after: "Pay when done", deposit: "£" + PAY.tripDeposit + " deposit by card", full: "Pay in full by link", invoice: "Trade invoice" }[pay];
-    var msg = "NEW BOOKING\n" + summaryText(q, [
+    var payTxt = { after: PAY.localDeposit ? "£" + PAY.localDeposit + " deposit, rest when done" : "Pay when done", deposit: M.money(tripDeposit(q.total)) + " deposit by card", full: "Pay in full by link", invoice: "Trade invoice" }[pay];
+    var msg = "BOOKING REQUEST\n" + summaryText(q, [
+      "Price lines: " + q.lines.map(function (l) { return l.label + " " + (l.amount < 0 ? "-" : "") + M.money(Math.abs(l.amount)); }).join("; "),
       "Payment: " + payTxt, "Name: " + name, "Mobile: " + phone + (email ? "\nEmail: " + email : ""),
       "Collect: " + aF, "Deliver: " + aT + ($("cNotes").value.trim() ? "\nNotes: " + $("cNotes").value.trim() : ""),
-      "Early start requested: " + ($("earlyBox").hidden ? "n/a" : "yes"), "WhatsApp updates: " + ($("cUpdates").checked ? "yes" : "no")
+      "Agreed to booking terms: yes (" + TERMS_VERSION + ")", "WhatsApp updates: " + ($("cUpdates").checked ? "yes" : "no"),
+      "Sent: " + new Date().toLocaleString("en-GB")
     ]);
     M.postLead({ type: "booking", ref: S.ref, name: name, phone: phone, email: email, collect: aF, deliver: aT, from: S.fromText, to: S.toText,
       miles: S.miles, local: S.local, hours: q.hours, items: $("items").value, van: S.vanId, date: iso(S.date), flexible: S.flexible, helpers: S.helpers,
-      payment: pay, price: q.total, earlyStart: !$("earlyBox").hidden, whatsappUpdates: $("cUpdates").checked, message: msg, at: new Date().toISOString() });
+      payment: pay, price: q.total, termsVersion: TERMS_VERSION, whatsappUpdates: $("cUpdates").checked, message: msg, at: new Date().toISOString() });
 
     $("dRef").textContent = S.ref;
     $("dLine").textContent = van().name + ", " + (M.isToday(S.date) ? "today" : fmtDate(S.date)) + ", " + (S.local ? "about " : "") + M.money(q.total) + ". Thanks, " + name.split(" ")[0] + ".";
-    var acts = '<a class="btn btn-wa" href="' + wa(msg) + '" target="_blank" rel="noopener">Send booking to M6 Freight on WhatsApp</a>';
+    var acts = '<a class="btn btn-wa" href="' + wa(msg) + '" target="_blank" rel="noopener">Send my booking request on WhatsApp</a>';
     if (pay === "deposit" && PAY.depositPaymentLink) {
       var link = PAY.depositPaymentLink + (PAY.depositPaymentLink.indexOf("?") > -1 ? "&" : "?") + "client_reference_id=" + encodeURIComponent(S.ref) + (email ? "&prefilled_email=" + encodeURIComponent(email) : "");
-      acts = '<a class="btn btn-go" href="' + esc(link) + '" target="_blank" rel="noopener">Pay £' + PAY.tripDeposit + " refundable deposit</a>" + acts;
+      acts = acts + '<a class="btn btn-go" href="' + esc(link) + '" target="_blank" rel="noopener">Pay ' + M.money(tripDeposit(q.total)) + " deposit</a>";
     }
     $("dActions").innerHTML = acts;
     var steps = [
-      ["Send it to us", C.leadWebhookUrl ? "We've got your booking. Tap the green button if you'd also like it in WhatsApp." : "Tap the green button. Your booking arrives on our WhatsApp, already filled in."],
-      ["We confirm", "A real person confirms within " + co.replyPromiseMinutes + " minutes (" + co.hours + ")" + (pay === "full" ? " and sends your secure payment link." : pay === "deposit" && !PAY.depositPaymentLink ? " and sends your deposit link." : ".")],
-      ["Day before", "Driver photo, van and your arrival window. Change the date free up to " + P.freeChangeHours + "h before."],
-      ["On the way", "A call 30 minutes out and a live map link."],
-      ["Done", "Photo when it's delivered" + (S.local ? ", then pay for the actual time." : ".")]
+      ["Send it to us", C.leadWebhookUrl ? "We've received your request. Tap the green button if you'd also like it in WhatsApp." : "Tap the green button to send it. Nothing reaches us until you do."],
+      ["We confirm", "Your booking is confirmed when we reply on WhatsApp (we aim to within " + co.replyPromiseMinutes + " minutes, " + co.hours + ")" + (pay === "full" ? ", with your secure payment link." : pay === "deposit" && !PAY.depositPaymentLink ? ", with your deposit link." : ".")],
+      ["Day before", (co.dayBeforePhoto ? "Driver photo, van and " : "Your ") + "arrival window. Change the date free up to " + P.freeChangeHours + "h before."],
+      ["On the way", "A message when we're about 30 minutes away."],
+      ["Done", (co.proofOfDelivery ? "Photo when it's delivered" : "Check everything's arrived") + (S.local ? ", then pay for the actual time." : ".")]
     ];
     $("dTimeline").innerHTML = steps.map(function (s, i) { return '<li><span class="n">' + (i + 1) + "</span><span><b>" + esc(s[0]) + "</b><br>" + esc(s[1]) + "</span></li>"; }).join("");
     $("checkout").hidden = true; $("results").hidden = true; $("done").hidden = false;
@@ -295,10 +319,10 @@
   var qs = new URLSearchParams(location.search);
   if (qs.get("from") && qs.get("to")) {
     $("from").value = qs.get("from"); $("to").value = qs.get("to"); $("items").value = qs.get("items") || "";
-    if (qs.get("date")) { $("wPick").checked = true; pick.hidden = false; pick.value = qs.get("date"); }
-    if (qs.get("helpers")) { S.helpers = parseInt(qs.get("helpers"), 10) || 0; S.helpersTouched = true; }
+    var qd = qs.get("date");
+    if (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) { var qp = qd.split("-"), qdd = new Date(+qp[0], +qp[1] - 1, +qp[2]); if (qdd >= earliest()) { $("wPick").checked = true; pick.hidden = false; pick.value = qd; } }
+    var qh = Math.max(0, Math.min(3, parseInt(qs.get("helpers"), 10) || 0));
+    if (qh) S.pendingHelpers = qh;
     $("quoteForm").requestSubmit ? $("quoteForm").requestSubmit() : $("goBtn").click();
-  } else {
-    try { var last = JSON.parse(localStorage.getItem("m6_last") || "null"); if (last) { $("from").value = last.f; $("to").value = last.t; $("items").value = last.i; } } catch (x) {}
   }
 })();
