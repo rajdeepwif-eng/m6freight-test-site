@@ -329,7 +329,7 @@
   $("promoBtn").addEventListener("click", function () {
     var c = $("cPromo").value.trim().toUpperCase();
     if (!c) { S.promo = ""; $("promoMsg").textContent = ""; }
-    else if (M.promoInfo(c, S.date)) { var pi = M.promoInfo(c, S.date); S.promo = c; $("promoMsg").textContent = "Code " + c + " applied: " + pi.pct + "% off" + (S.local ? " your final bill" : "") + (pi.ends ? ". Ends " + fmtDate(new Date(pi.ends + "T12:00")) : "") + (pi.terms ? ". " + pi.terms : "") + "."; }
+    else if (M.promoInfo(c, S.date)) { var pi = M.promoInfo(c, S.date); S.promo = c; $("promoMsg").textContent = "Code " + c + " applied: " + pi.pct + "% off" + (S.local ? " your final bill" : "") + (pi.ends ? ". Ends " + fmtDate(new Date(pi.ends + "T12:00")) : "") + (pi.terms ? ". " + pi.terms.replace(/\.$/, "") : "") + "."; }
     else if (C.promoCodes[c]) { S.promo = ""; $("promoMsg").textContent = "That code has ended."; }
     else { S.promo = ""; $("promoMsg").textContent = "That code isn't valid."; }
     renderAll();
