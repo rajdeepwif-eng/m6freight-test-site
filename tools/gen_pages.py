@@ -1,6 +1,6 @@
 import json, re, os
 os.chdir('/home/claude/m6-test')
-V='?v=20261118f'
+V='?v=20261118h'
 def shell(title, body, depth=0, desc="", scripts=True, extra_js=""):
     p='../'*depth
     return f'''<!DOCTYPE html>
@@ -88,7 +88,7 @@ guide_check='''<section class="band"><div class="wrap" style="max-width:860px;di
 open('guides/moving-checklist.html','w').write(shell("Moving checklist | M6 Freight", guide_check, 1, "A simple moving checklist for small moves and single items."))
 print("pages ok")
 
-trade='''<section class="hero"><div class="wrap" style="grid-template-columns:1.1fr 1fr">
+trade='''<section class="hero"><div class="wrap">
 <div><h1>Trade accounts.<br><em>One message, it's booked.</em></h1>
 <p class="sub">For furniture and appliance shops, builders' merchants, estate agents and workshops. Agreed rates, monthly invoice, delivery confirmation on WhatsApp.</p></div>
 <div class="ph"><picture><source type="image/webp" srcset="img/business-pallets-800.webp"><img src="img/business-pallets-800.jpg" alt="White van at a loading bay with two pallets" width="800" height="450"></picture></div></div></section>
@@ -143,7 +143,7 @@ track='''<section class="band"><div class="wrap" style="max-width:760px;display:
 </div></section>'''
 track_js='''<script>(function(){var C=window.M6_CONFIG,co=C.company;function $(i){return document.getElementById(i)}
 $("tf").addEventListener("submit",function(e){e.preventDefault();var r=$("tRef").value.trim().toUpperCase(),p=$("tPhone").value.replace(/\\D/g,"");
-if(!/^M6-[A-Z0-9]{5}$/.test(r)||p.length<10){$("tErr").textContent="Enter your booking reference (like M6-7KX2P) and the mobile you booked with.";$("tErr").hidden=false;$("tOut").hidden=true;return;}
+if(!/^M6-[A-Z0-9]{5,6}$/.test(r)||p.length<10){$("tErr").textContent="Enter your booking reference (like M6-7KX2PQ) and the mobile you booked with.";$("tErr").hidden=false;$("tOut").hidden=true;return;}
 $("tErr").hidden=true;
 if(!C.demoMode){$("tOut").hidden=false;$("tHead").innerHTML="Live tracking isn't switched on yet. Message us on WhatsApp with <b>"+r+"</b> for an update.";$("tLine").innerHTML="";$("tNote").textContent="";return;}
 var steps=[["Request received","Your booking request reached us.",1],["Confirmed","Confirmed on WhatsApp.",1],["Day before","Arrival window 10:00–12:00 sent.",1],["On the way","About 25 minutes away.",2],["Delivered","Photo and sign-off.",0]];
@@ -153,16 +153,16 @@ $("tNote").textContent="Test site: this is example progress. The live version wo
 open('track.html','w').write(shell("Track a job | M6 Freight", track, 0, "Track your M6 Freight booking.", True, track_js))
 print("trade/track ok")
 
-drive='''<section class="hero"><div class="wrap" style="grid-template-columns:1.1fr 1fr">
+drive='''<section class="hero"><div class="wrap">
 <div><h1>Drive with us.<br><em>Overflow work for local vans.</em></h1>
 <p class="sub">When we're fully booked we pass jobs to a small group of local van owners we've checked in person. Fixed price per job, agreed before you take it.</p></div>
 <div class="ph"><picture><source type="image/webp" srcset="img/hero-motorway-800.webp"><img src="img/hero-motorway-800.jpg" alt="White van on a UK motorway" width="800" height="450"></picture></div></div></section>
 <section class="band"><div class="wrap" style="display:grid;gap:16px;max-width:900px">
 <h2 style="margin:0">How it works</h2>
-<ol class="steps"><li><span class="n">1</span><span><b>Tell us about you</b><br>Your van, areas and when you're free. One WhatsApp message.</span></li>
-<li><span class="n">2</span><span><b>We meet and check</b><br>Driving licence, V5C, goods-in-transit and public liability insurance, seen in person. Please don't send documents through this page.</span></li>
-<li><span class="n">3</span><span><b>Get offered jobs</b><br>We send the job, the fixed price and the times. You say yes or no.</span></li>
-<li><span class="n">4</span><span><b>Get paid</b><br>Paid by bank transfer within 7 days of the job, against your invoice.</span></li></ol>
+<ol class="steps"><li><span><b>Tell us about you</b><br>Your van, areas and when you're free. One WhatsApp message.</span></li>
+<li><span><b>We meet and check</b><br>Driving licence, V5C, goods-in-transit and public liability insurance, plus any checks the law requires (such as right to work, where it applies), done before your first job. Please don't send documents through this page.</span></li>
+<li><span><b>Get offered jobs</b><br>We send the job, the fixed price and the times. You say yes or no.</span></li>
+<li><span><b>Get paid</b><br>Paid by bank transfer within 7 days of the job, against your invoice.</span></li></ol>
 <p class="small">You work as an independent business, with your own insurance. Overflow work only: no guaranteed volume. Terms are agreed before your first job.</p>
 </div></section>
 <section class="band" style="background:#fff"><div class="wrap" style="display:grid;gap:14px;max-width:900px">
@@ -171,12 +171,12 @@ drive='''<section class="hero"><div class="wrap" style="grid-template-columns:1.
 <div class="two"><div class="field"><label for="dName">Your name</label><input id="dName" autocomplete="name"></div><div class="field"><label for="dPhone">Mobile</label><input id="dPhone" type="tel" inputmode="tel" autocomplete="tel"></div></div>
 <div class="two"><div class="field"><label for="dVan">Van size</label><select id="dVan"><option>Small van</option><option>Medium (SWB/MWB)</option><option>Large (LWB)</option><option>Luton with tail-lift</option></select></div><div class="field"><label for="dArea">Areas you cover</label><input id="dArea" placeholder="e.g. Wolverhampton, Telford"></div></div>
 <div class="field"><label for="dIns">Goods-in-transit and public liability insurance?</label><select id="dIns"><option>Yes, both</option><option>One of them</option><option>Not yet</option></select></div>
-<p class="err" id="dErr" hidden></p>
+<p class="err" id="dErr" role="alert" hidden></p>
 <a class="btn btn-wa" id="dSend" href="#" target="_blank" rel="noopener">Apply on WhatsApp</a>
 <p class="small">We use these details only to review your application (see our <a href="privacy.html">privacy notice</a>).</p>
 </form></div></section>'''
 drive_js='''<script>(function(){var co=window.M6_CONFIG.company;function $(i){return document.getElementById(i)}
-$("dSend").addEventListener("click",function(e){var n=$("dName").value.trim(),p=$("dPhone").value.replace(/\\D/g,"");
+$("dSend").addEventListener("click",function(e){var n=$("dName").value.trim(),p=$("dPhone").value.replace(/\\(0\\)/g,"").replace(/\\D/g,"");
 if(!n||!/^(07\\d{9}|447\\d{9})$/.test(p)){e.preventDefault();$("dErr").textContent="Add your name and UK mobile number.";$("dErr").hidden=false;return;}
 $("dErr").hidden=true;this.href="https://wa.me/"+co.phoneIntl+"?text="+encodeURIComponent("DRIVER APPLICATION\\nName: "+n+"\\nMobile: "+$("dPhone").value+"\\nVan: "+$("dVan").value+"\\nAreas: "+$("dArea").value+"\\nInsurance: "+$("dIns").value);});})();</script>'''
 open('drive.html','w').write(shell("Drive with us | M6 Freight", drive, 0, "Overflow jobs for checked local van owners.", True, drive_js))

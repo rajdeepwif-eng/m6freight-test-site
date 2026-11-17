@@ -100,6 +100,9 @@ S = [  # id, from, to, items, when, extra, expect
  (53,"WV1 1AA","Ryde","sofa","tomorrow",{},"err-ferry"),
  (55,"B1 1AA","M1 1AE","sofa","tomorrow",{"promo":"TEST10","slot":True,"pay":"deposit"},"trip"),
  (56,"WV1 1AA","B1 1AA","sofa","tomorrow",{"promo":"FAKE99"},"local"),
+ (57,"WV1 1AA","M1 1AE","sofa","tomorrow",{"via":"ST16 2AA"},"trip"),
+ (58,"WV1 1AA","B1 1AA","sofa","tomorrow",{"via":"DY1 1AA"},"local"),
+ (59,"WV1 1AA","B1 1AA","sofa","tomorrow",{"via":"ZZ99 9ZZ"},"err-locate"),
  (54,"QS","","","",{"url":"index.html?from=WV1%201AA&to=B1%201AA&items=sofa&date=2020-01-01"},"local"),
 ]
 
@@ -138,6 +141,7 @@ async def run_one(b, sc):
         else:
             await pg.goto(BASE + "index.html"); await pg.wait_for_timeout(400)
             await pg.fill("#from", f); await pg.fill("#to", t); await pg.fill("#items", items)
+            if ex.get("via"): await pg.click("#addStop"); await pg.fill("#via", ex["via"])
             sel = {"today": "wToday", "tomorrow": "wTom"}.get(when, "wPick")
             await pg.evaluate("id=>{var x=document.getElementById(id);x.checked=true;x.dispatchEvent(new Event('change',{bubbles:true}))}", sel)
             if sel == "wPick": await pg.evaluate("v=>{var p=document.getElementById('pickDate');p.hidden=false;p.value=v}", when)
@@ -218,6 +222,10 @@ async def run_one(b, sc):
             after = money(await pg.inner_text("#sPrice")); res["promoMsg"] = await pg.inner_text("#promoMsg")
             if ex["promo"] == "TEST10" and not (before and after and abs(after - round(before * 0.9)) <= 1): I.append("promo not applied: %s -> %s" % (before, after))
             if ex["promo"] == "FAKE99" and after != before: I.append("invalid promo changed price")
+            if ex["promo"] == "FAKE99":
+                await pg.click("#coSubmit", force=True); await pg.wait_for_timeout(300)
+                if await pg.is_visible("#done"): I.append("booked with an invalid code still typed")
+                await pg.fill("#cPromo", "")
             res["price2"] = await pg.inner_text("#sPrice")
         if o["terms"]: await pg.check("#cTerms", force=True)
         amt = await pg.eval_on_selector_all('input[name="pay"]:checked + label .amt', "a=>a.map(x=>x.textContent)")
@@ -235,13 +243,18 @@ async def run_one(b, sc):
         href = await pg.get_attribute("#dActions a.btn-wa", "href") or ""
         msg = urllib.parse.unquote(href.split("text=", 1)[1]) if "text=" in href else ""
         res["waLen"] = len(href); res["msg"] = msg
-        if not re.match(r"^M6-[A-Z0-9]{5}$", res["ref"]): I.append("bad ref " + res["ref"])
+        if not re.match(r"^M6-[A-Z0-9]{6}$", res["ref"]): I.append("bad ref " + res["ref"])
         for need in ["BOOKING REQUEST", o["name"] or "", "Collect: ", "Deliver: ", "Agreed to booking terms: yes", "Payment: "]:
             if need and need not in msg: I.append("message missing '%s'" % need[:30])
         pm = money(res["price2"]); dm = money(res["dline"])
         if pm and dm and abs(pm - dm) > 0.5: I.append("price changed between quote £%s and done £%s" % (pm, dm))
         if await pg.locator("img[src=x]").count() or await pg.locator("#cNotes ~ script, #done script").count(): I.append("XSS: markup rendered")
         if len(href) > 4000: I.append("WhatsApp link %d chars (may be cut off)" % len(href))
+        if ex.get("via"):
+            if ex["via"] not in msg: I.append("stop missing from message")
+            if exp == "trip" and "extra stop" not in msg: I.append("stop fee line missing")
+        ext = await pg.inner_html("#dExtras")
+        if "text/calendar" not in ext: I.append("no calendar link")
         if ex.get("slot") and "time: " not in msg: I.append("time slot missing from message")
         if ex.get("promo") == "TEST10" and "Code TEST10" not in msg: I.append("promo line missing from message")
         if pay == "deposit" and pm:
@@ -283,7 +296,7 @@ async def extra(b):
     await pg.goto(BASE + "drive.html"); await pg.click("#dSend"); out.append(("drive-empty", await pg.inner_text("#dErr")))
     await pg.fill("#dName", "Ali"); await pg.fill("#dPhone", "07700900123"); await pg.fill("#dArea", "Telford"); await pg.click("#dSend")
     h = await pg.get_attribute("#dSend", "href"); out.append(("drive-apply", urllib.parse.unquote(h.split("text=")[1]) if "text=" in h else "NO LINK"))
-    await pg.goto(BASE + "track.html"); await pg.fill("#tRef", "m6-7kx2p"); await pg.fill("#tPhone", "07700900123"); await pg.click("#tf button")
+    await pg.goto(BASE + "track.html"); await pg.fill("#tRef", "m6-7kx2pq"); await pg.fill("#tPhone", "07700900123"); await pg.click("#tf button")
     out.append(("track-sample", (await pg.inner_text("#tOut"))[:120]))
     await pg.fill("#tRef", "hello"); await pg.click("#tf button"); out.append(("track-bad-ref", await pg.inner_text("#tErr")))
     await pg.goto(BASE + "quote.html"); await pg.wait_for_timeout(300)

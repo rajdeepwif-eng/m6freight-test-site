@@ -7,7 +7,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>Track a job | M6 Freight</title>
 <meta name="description" content="Track your M6 Freight booking.">
-<link rel="stylesheet" href="styles.css?v=20261118f">
+<link rel="stylesheet" href="styles.css?v=20261118h">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
@@ -25,10 +25,10 @@
 </div></section>
 </main>
 <footer><div class="wrap"><div><h3>M6 Freight</h3><p>M6 FREIGHTUK LTD, registered in England and Wales. Company no. 17059854.</p></div><div><h3>Contact</h3><p>Phone / WhatsApp: <a href="tel:+447301519319">07301 519319</a></p></div><div><h3>Info</h3><p><a href="index.html">Get a price</a><br><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="guides/man-and-van-prices.html">Prices guide</a><br><a href="terms.html">Booking terms</a> · <a href="privacy.html">Privacy</a></p></div></div></footer>
-<script src="config.js?v=20261118f"></script>
+<script src="config.js?v=20261118h"></script>
 <script>(function(){var C=window.M6_CONFIG,co=C.company;function $(i){return document.getElementById(i)}
 $("tf").addEventListener("submit",function(e){e.preventDefault();var r=$("tRef").value.trim().toUpperCase(),p=$("tPhone").value.replace(/\D/g,"");
-if(!/^M6-[A-Z0-9]{5}$/.test(r)||p.length<10){$("tErr").textContent="Enter your booking reference (like M6-7KX2P) and the mobile you booked with.";$("tErr").hidden=false;$("tOut").hidden=true;return;}
+if(!/^M6-[A-Z0-9]{5,6}$/.test(r)||p.length<10){$("tErr").textContent="Enter your booking reference (like M6-7KX2PQ) and the mobile you booked with.";$("tErr").hidden=false;$("tOut").hidden=true;return;}
 $("tErr").hidden=true;
 if(!C.demoMode){$("tOut").hidden=false;$("tHead").innerHTML="Live tracking isn't switched on yet. Message us on WhatsApp with <b>"+r+"</b> for an update.";$("tLine").innerHTML="";$("tNote").textContent="";return;}
 var steps=[["Request received","Your booking request reached us.",1],["Confirmed","Confirmed on WhatsApp.",1],["Day before","Arrival window 10:00–12:00 sent.",1],["On the way","About 25 minutes away.",2],["Delivered","Photo and sign-off.",0]];

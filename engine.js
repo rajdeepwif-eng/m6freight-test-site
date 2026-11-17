@@ -104,7 +104,8 @@
     return null;
   }
   function promoInfo(code, on) {
-    var p = code && C.promoCodes && C.promoCodes[code]; if (!p) return null;
+    if (C.promoCodes && !C._pcUp) { var up = {}; Object.keys(C.promoCodes).forEach(function (k) { up[k.toUpperCase()] = C.promoCodes[k]; }); C.promoCodes = up; C._pcUp = true; }
+    var p = code && C.promoCodes && C.promoCodes[String(code).toUpperCase()]; if (!p) return null;
     if (typeof p === "number") p = { pct: p };
     if (p.ends) { var e = p.ends.split("-"), end = new Date(+e[0], +e[1] - 1, +e[2], 23, 59, 59); if ((on || new Date()) > end || new Date() > end) return null; }
     return p;
@@ -180,7 +181,7 @@
     var P = C.pricing, v = o.van, lines = [], total, hours = null;
     var d = o.date || new Date();
     if (o.local) {
-      var mins = o.miles / P.localMph * 60 + Math.max(20, (o.vol || 0.5) * P.loadMinutesPerM3);
+      var mins = o.miles / P.localMph * 60 + Math.max(20, (o.vol || 0.5) * P.loadMinutesPerM3) + (o.stops || 0) * (P.stopMinutes || 15);
       hours = Math.max(P.minimumHours, Math.ceil(mins / P.incrementMinutes) * P.incrementMinutes / 60);
       var rate = v.hourly + (o.helpers || 0) * P.helperHourly;
       total = rate * hours;
@@ -189,17 +190,18 @@
       var charged = o.miles * (1 + P.returnShare);
       total = Math.max(v.minimum, v.base + charged * v.perMile);
       lines.push({ label: v.name + " · " + o.miles + " miles, all-in", amount: total });
+      if (o.stops) { var sf = o.stops * (P.stopFee || 15); lines.push({ label: o.stops + " extra stop" + (o.stops > 1 ? "s" : ""), amount: sf }); total += sf; }
       if (o.helpers) { var h = o.helpers * P.helperTripFee; lines.push({ label: o.helpers + " extra " + (o.helpers > 1 ? "people" : "person"), amount: h }); total += h; }
     }
     if (!o.flexible && isToday(d)) { var sd = total * P.sameDayPct / 100; lines.push({ label: "Same-day", amount: sd }); total += sd; }
     var day = d.getDay();
     if (!o.flexible && (day === 0 || day === 6)) { var we = total * P.weekendPct / 100; lines.push({ label: "Weekend", amount: we }); total += we; }
     if (o.flexible) { var fx = -total * P.flexiblePct / 100; lines.push({ label: "Flexible-date saving", amount: fx }); total += fx; }
-    var pc = promoInfo(o.promo, d);
+    var prePromo = total, pc = promoInfo(o.promo, d);
     if (pc) { var pr = -total * pc.pct / 100; lines.push({ label: "Code " + o.promo + " (" + pc.pct + "% off" + (o.local ? " your final bill" : "") + ")", amount: pr }); total += pr; }
     lines.forEach(function (l) { l.amount = Math.round(l.amount); });
     total = lines.reduce(function (s, l) { return s + l.amount; }, 0);
-    var hourlyRate = o.local ? Math.round(total / hours) : null;
+    var hourlyRate = o.local ? Math.round(prePromo / hours) : null;
     return { total: total, lines: lines, hours: hours, hourlyRate: hourlyRate, local: !!o.local };
   }
 
@@ -211,7 +213,7 @@
   }
 
   function money(n) { return "£" + Math.round(n).toLocaleString("en-GB"); }
-  function ref() { var s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = ""; for (var i = 0; i < 5; i++) r += s[Math.floor(Math.random() * s.length)]; return "M6-" + r; }
+  function ref() { var s = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789", r = ""; for (var i = 0; i < 6; i++) r += s[Math.floor(Math.random() * s.length)]; return "M6-" + r; }
 
   function postLead(payload) {
     if (!C.leadWebhookUrl) return;

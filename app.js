@@ -48,7 +48,7 @@
     [PAY.localDeposit ? "Small deposit, pay the rest after" : "No deposit on local jobs", "Request in about a minute and pay when the job's done. Free date changes up to " + P.freeChangeHours + " hours before."],
     [co.arrivalWindowHours + "-hour arrival window", "Plus a WhatsApp message when we're about 30 minutes away." + (co.noCancellationsMonths ? " No cancellations by us in the last " + co.noCancellationsMonths + " months." : "")]
   ];
-  if (co.ownerDriven) R.push(["The owner drives your job", (C.driversWanted ? "The person you message is the person who turns up. If we ever need a partner driver, we tell you first and you can say no" : "The person you message is the person who turns up") + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
+  if (co.ownerDriven) R.push([C.driversWanted ? "The owner drives most jobs" : "The owner drives your job", (C.driversWanted ? "The person you message is the person who turns up. If we ever need a partner driver, we tell you first and you can say no" : "The person you message is the person who turns up") + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
   if (co.paddingStandard) R.push(["Padded, every time", "Blankets and wrap on every piece, door-frame and floor protection in your home. Standard, not an extra."]);
   if (co.damagePromise) R.push(["Our damage promise", co.damagePromise + (co.claimReplyHours ? " We reply to any damage report within " + co.claimReplyHours + " hours." : "")]);
   else if (co.proofOfDelivery) R.push(["Proof at every step", "A photo when it's delivered, sent to you on WhatsApp."]);
@@ -165,25 +165,28 @@
     function fail(m) { err.textContent = m; err.hidden = false; $("results").hidden = true; $("bar").classList.remove("on"); document.body.classList.remove("has-bar"); }
     if (!f || !t) { fail("Add where we collect from and where it's going."); return; }
     $("checkout").hidden = true; $("done").hidden = true;
-    var off = M.offshore(f) || M.offshore(t);
+    var vq = $("viaBox").hidden ? "" : $("via").value.trim();
+    var off = M.offshore(f) || M.offshore(t) || (vq && M.offshore(vq));
     if (off) { fail(off + " needs a ferry crossing, so we price it by hand. Send the details on WhatsApp and we'll reply with a price."); err.innerHTML = esc(err.textContent) + ' <a href="' + wa("Hi M6 Freight, I need a price for a job to/from " + off + ": " + f + " to " + t + ". Items: " + $("items").value) + '" target="_blank" rel="noopener">Message us</a>'; return; }
     var when = chosenDate();
     if (!when) { fail("Choose a date from " + fmtDate(earliest()) + " onwards."); return; }
     if (!$("items").value.trim()) $("items").value = "parcel";
     var btn = $("goBtn"); btn.textContent = "Working out your price…"; btn.disabled = true;
-    Promise.all([M.locate(f), M.locate(t), BASE ? Promise.resolve(BASE) : M.locate(C.base.place)]).then(function (r) {
+    Promise.all([M.locate(f), M.locate(t), BASE ? Promise.resolve(BASE) : M.locate(C.base.place), vq ? M.locate(vq) : Promise.resolve(null)]).then(function (r) {
       btn.textContent = "Show my price →"; btn.disabled = false;
       if (!r[0] || !r[1]) { fail("We couldn't find " + (!r[0] ? '"' + f + '"' : '"' + t + '"') + ". Try a postcode, e.g. WV1 1AA."); return; }
+      if (vq && !r[3]) { fail("We couldn't find the extra stop \"" + vq + "\". Try a postcode."); return; }
+      S.via = r[3] || null; S.viaText = vq;
       BASE = r[2];
       S.from = r[0]; S.to = r[1]; S.fromText = f; S.toText = t;
-      S.miles = M.miles(r[0], r[1]);
-      S.local = !!BASE && M.miles(BASE, r[0]) <= C.base.localRadiusMiles && M.miles(BASE, r[1]) <= C.base.localRadiusMiles;
+      S.miles = S.via ? M.miles(r[0], S.via) + M.miles(S.via, r[1]) : M.miles(r[0], r[1]);
+      S.local = !!BASE && M.miles(BASE, r[0]) <= C.base.localRadiusMiles && M.miles(BASE, r[1]) <= C.base.localRadiusMiles && (!S.via || M.miles(BASE, S.via) <= C.base.localRadiusMiles);
       S.items = M.readItems($("items").value); S.vol = M.volume(S.items);
       S.vanId = M.bestVan(S.vol).id;
       S.date = when;
       S.helpersTouched = false; S.helpers = M.needsTwo(S.items) ? 1 : 0;
       if (S.pendingHelpers) { S.helpers = S.pendingHelpers; S.helpersTouched = true; S.pendingHelpers = 0; }
-      S.flexible = false; $("flex").checked = false; S.promo = ""; $("cPromo").value = ""; $("promoMsg").textContent = "";
+      S.flexible = false; $("flex").checked = false; if (S.promo) { S.promoNote = S.promo; } S.promo = ""; $("cPromo").value = ""; $("promoMsg").textContent = S.promoNote ? "New price: please re-enter code " + S.promoNote + " if you'd like to use it." : ""; S.promoNote = "";
       showResults(true);
       if (S.dateNote) { S.dateNote = false; var n = document.createElement("span"); n.className = "note"; n.textContent = " The date in your link wasn't available, so we've shown " + fmtDate(S.date) + ". Pick another day below."; $("bWhen").appendChild(n); }
       M.postLead({ type: "price_viewed", from: f, to: t, miles: S.miles, local: S.local, items: $("items").value, date: iso(S.date), price: current().total, van: S.vanId, at: new Date().toISOString() });
@@ -191,13 +194,13 @@
   });
 
   function van() { return C.vans.filter(function (v) { return v.id === S.vanId; })[0]; }
-  function quoteFor(v, d) { return M.price({ van: v, miles: S.miles, vol: S.vol, date: d || S.date, helpers: S.helpers, flexible: S.flexible, local: S.local, promo: S.promo }); }
+  function quoteFor(v, d) { return M.price({ van: v, miles: S.miles, vol: S.vol, date: d || S.date, helpers: S.helpers, flexible: S.flexible, local: S.local, promo: S.promo, stops: S.via ? 1 : 0 }); }
   function current() { return quoteFor(van()); }
 
   function showResults(scroll) {
     var R = $("results"); R.hidden = false;
     $("rFrom").innerHTML = esc(S.from.label) + "<small>Collection</small>";
-    $("rTo").innerHTML = esc(S.to.label) + "<small>Delivery</small>";
+    $("rTo").innerHTML = esc(S.to.label) + "<small>Delivery" + (S.via ? " · via " + esc(S.via.label) : "") + "</small>";
     var line = $("roadLine"); line.classList.remove("dash"); void line.getBBox(); line.classList.add("dash");
     $("sMiles").textContent = S.miles;
     $("sVol").textContent = S.vol.toFixed(1);
@@ -213,6 +216,7 @@
   var VANSVG = '<svg viewBox="0 0 46 28" aria-hidden="true"><path d="M2 6h26v15H2zM28 11h9l6 6v4H28z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><circle cx="10" cy="23" r="3.2" fill="currentColor"/><circle cx="35" cy="23" r="3.2" fill="currentColor"/></svg>';
 
   function renderAll() {
+    if (S.promo && !M.promoInfo(S.promo, S.date)) { var lost = S.promo, li = M.promoInfo(lost, new Date()); S.promo = ""; $("promoMsg").textContent = "Code " + lost + " doesn't cover this date" + (li && li.ends ? " (jobs up to " + promoEnds(li) + ")" : "") + ", so it's been removed."; }
     var v = van(), best = M.bestVan(S.vol), q = current();
     var oversize = S.vol > M.maxM3();
     $("bookBtn").hidden = oversize; $("barBook").hidden = oversize;
@@ -248,7 +252,7 @@
     $("bMode").textContent = S.local ? "Local · hourly, all-in" : approx() ? "Trip · estimated price, all-in" : "Trip · fixed price, all-in";
     $("bVan").textContent = v.name + " · just your job";
     $("bSub").textContent = S.local
-      ? "Estimate for about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr. You pay for the actual time, in " + P.incrementMinutes + "-min steps." + (co.vatRegistered ? " Inc VAT." : "")
+      ? "Estimate for about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr" + (S.promo ? ", then " + M.promoInfo(S.promo, S.date).pct + "% off your final bill" : "") + ". You pay for the actual time, in " + P.incrementMinutes + "-min steps." + (co.vatRegistered ? " Inc VAT." : "")
       : (approx() ? "Estimated from the postcode area. We confirm the fixed price once we have your full address" : "Fixed price for the whole job") + (co.vatRegistered ? ", including VAT." : ". No VAT to add.");
     $("bWhen").textContent = (M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days, we confirm the day)" : "") + (S.local ? "" : " · about " + M.etaText(S.miles));
     var incl = ["Van and driver, only your goods on board", "Fuel included, no booking or stairs fee", (co.dayBeforePhoto ? "Driver photo the day before, " : "Arrival window the day before, ") + "message when we're 30 min away"];
@@ -282,10 +286,10 @@
   function summaryText(q, extra) {
     var itemsTxt = S.items.map(function (i) { return (i.qty > 1 ? i.qty + " × " : "") + i.name; }).join(", ");
     return [
-      (S.ref ? "Ref " + S.ref + "\n" : "") + S.fromText + " → " + S.toText + " (" + S.miles + " miles)",
+      (S.ref ? "Ref " + S.ref + "\n" : "") + S.fromText + " → " + (S.via ? S.viaText + " → " : "") + S.toText + " (" + S.miles + " miles)",
       "Items: " + itemsTxt,
       "Van: " + van().name + (S.helpers ? " + " + plural(S.helpers, "helper") : ""),
-      "Date: " + fmtDate(S.date) + (S.flexible ? " (flexible ±2 days)" : ""),
+      "Date: " + fmtDate(S.date) + (S.flexible ? " (flexible ±2 days)" : "") + (S.promo ? "\nCode: " + S.promo : ""),
       S.local ? "Price: approx " + M.money(q.total) + " (about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr, all-in)" : "Price: " + M.money(q.total) + (approx() ? " estimated (area only, to confirm)" : " fixed, all-in")
     ].concat(extra || []).join("\n");
   }
@@ -322,22 +326,36 @@
     $("cardNote").hidden = S.local && !PAY.localDeposit;
     $("cAddrFrom").placeholder = "House number, street — " + S.fromText;
     $("cAddrTo").placeholder = "House number, street — " + S.toText;
-    var sl = $("cSlot"), keep = sl.value; var nowH = new Date().getHours(), slots = (C.slots || []).filter(function (x) { if (!M.isToday(S.date)) return true; var m = x.match(/^(\d+)/), h = +m[1]; if (/^\d+(am)?[–-]/.test(x) && h < 8) h += 12; if (/^\d+[–-]\d+pm/.test(x) && h < 8) h += 12; return h > nowH + 1; });
-    sl.innerHTML = '<option value="">Any time (we confirm)</option>' + slots.map(function (x) { return "<option>" + esc(x) + "</option>"; }).join(""); sl.value = keep;
+    var sl = $("cSlot"), keep = sl.value; var now = new Date(), nowMin = now.getHours() * 60 + now.getMinutes(), slots = (C.slots || []).filter(function (x) { if (!M.isToday(S.date)) return true; return slotStart(x) - nowMin >= 90; });
+    sl.innerHTML = '<option value="">Any time (we confirm)</option>' + slots.map(function (x) { return "<option>" + esc(x) + "</option>"; }).join("");
+    if (keep && slots.indexOf(keep) === -1) { sl.value = ""; $("slotNote").textContent = "Your " + keep + " slot isn't available on this date. Pick another time."; } else { sl.value = keep; $("slotNote").textContent = ""; }
     $("promoBox").hidden = !C.promoCodes || !Object.keys(C.promoCodes).length;
   }
-  $("promoBtn").addEventListener("click", function () {
-    var c = $("cPromo").value.trim().toUpperCase();
-    if (!c) { S.promo = ""; $("promoMsg").textContent = ""; }
-    else if (M.promoInfo(c, S.date)) { var pi = M.promoInfo(c, S.date); S.promo = c; $("promoMsg").textContent = "Code " + c + " applied: " + pi.pct + "% off" + (S.local ? " your final bill" : "") + (pi.ends ? ". Ends " + fmtDate(new Date(pi.ends + "T12:00")) : "") + (pi.terms ? ". " + pi.terms.replace(/\.$/, "") : "") + "."; }
-    else if (C.promoCodes[c]) { S.promo = ""; $("promoMsg").textContent = "That code has ended."; }
-    else { S.promo = ""; $("promoMsg").textContent = "That code isn't valid."; }
+  function slotStart(x) {
+    x = String(x); var m = x.match(/^(\d{1,2})(?::(\d\d))?\s*(am|pm)?/i), h = +m[1], end = x.match(/[–-]\s*(\d{1,2})(?::\d\d)?\s*(am|pm)?/i);
+    var mer = (m[3] || "").toLowerCase();
+    if (!mer && end && end[2]) { mer = end[2].toLowerCase(); if (mer === "pm" && h > +end[1] && h !== 12) mer = "am"; }
+    if (mer === "pm" && h < 12) h += 12; if (mer === "am" && h === 12) h = 0;
+    return h * 60 + (+m[2] || 0);
+  }
+  function promoEnds(pi) { return pi && pi.ends ? fmtDate(new Date(pi.ends + "T12:00")) : ""; }
+  function applyPromo() {
+    var c = $("cPromo").value.trim().toUpperCase(), msg = $("promoMsg"), raw = C.promoCodes && (C.promoCodes[c] || C.promoCodes[c.toLowerCase()]);
+    if (!c) { S.promo = ""; msg.textContent = ""; }
+    else {
+      var pi = M.promoInfo(c, S.date);
+      if (pi) { S.promo = c; msg.textContent = "Code " + c + " applied: " + pi.pct + "% off" + (S.local ? " your final bill" : "") + (pi.ends ? ". For jobs booked and done by " + promoEnds(pi) : "") + (pi.terms ? ". " + pi.terms.replace(/\.$/, "") : "") + "."; }
+      else if (M.promoInfo(c, new Date())) msg.textContent = "Code " + c + " is for jobs up to " + promoEnds(M.promoInfo(c, new Date())) + ". Pick an earlier date to use it." + (S.promo ? " Your code " + S.promo + " is still applied." : "");
+      else msg.textContent = (raw ? "That code has ended." : "That code isn't valid.") + (S.promo ? " Your code " + S.promo + " is still applied." : "");
+    }
     renderAll();
-  });
+  }
+  $("promoBtn").addEventListener("click", applyPromo);
+  $("cPromo").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); applyPromo(); } });
   /* ---------- one step per screen on phones ---------- */
   var STEP = 1, STEPS = 3, mqStep = window.matchMedia("(max-width: 920px)");
   function stepMissing(n) {
-    var m = [], digits = $("cPhone").value.replace(/\D/g, "");
+    var m = [], digits = $("cPhone").value.replace(/\(0\)/g, "").replace(/\D/g, "");
     if (n === 1) { if (!$("cName").value.trim()) m.push("name"); if (!/^(07\d{9}|447\d{9})$/.test(digits)) m.push("UK mobile number (07…)"); }
     if (n === 2) { if (!$("cAddrFrom").value.trim()) m.push("collection address"); if (!$("cAddrTo").value.trim()) m.push("delivery address"); }
     return m;
@@ -367,10 +385,12 @@
   $("coForm").addEventListener("submit", function (e) {
     e.preventDefault();
     if (mqStep.matches && STEP < STEPS) { $("stepNext").click(); return; }
+    var typed = $("cPromo").value.trim().toUpperCase();
+    if (!$("promoBox").hidden && typed && typed !== S.promo) { applyPromo(); if (S.promo !== typed) { $("coErr").textContent = "Check the discount code, or clear it to continue."; $("coErr").hidden = false; return; } }
     var err = $("coErr"); err.hidden = true;
     var name = $("cName").value.trim(), phone = $("cPhone").value.trim(), email = $("cEmail").value.trim();
     var aF = $("cAddrFrom").value.trim(), aT = $("cAddrTo").value.trim(), missing = [];
-    var digits = phone.replace(/\D/g, "");
+    var digits = phone.replace(/\(0\)/g, "").replace(/\D/g, "");
     if (!name) missing.push("name");
     if (!/^(07\d{9}|447\d{9})$/.test(digits)) missing.push("UK mobile number (07…)");
     if (!aF) missing.push("collection address"); if (!aT) missing.push("delivery address");
@@ -398,6 +418,7 @@
       acts = acts + '<a class="btn btn-go" href="' + esc(link) + '" target="_blank" rel="noopener">Pay ' + M.money(tripDeposit(q.total)) + " deposit</a>";
     }
     $("dActions").innerHTML = acts;
+    $("dExtras").innerHTML = '<a href="' + icsHref() + '" download="M6-Freight-' + S.ref + '.ics">Add to my calendar</a> · <a href="' + esc(shareUrl()) + '">Link to this price</a>';
     var steps = [
       ["Send it to us", C.leadWebhookUrl ? "We've received your request. Tap the green button if you'd also like it in WhatsApp." : "Tap the green button to send it. Nothing reaches us until you do."],
       ["We confirm", "Your booking is confirmed when we reply on WhatsApp (we aim to within " + co.replyPromiseMinutes + " minutes, " + co.hours + ")" + (pay === "full" ? ", with your secure payment link." : pay === "deposit" && !PAY.depositPaymentLink ? ", with your deposit link." : ".")],
@@ -412,12 +433,35 @@
   });
 
   if (!C.driversWanted) document.querySelectorAll('a[href="drive.html"]').forEach(function (a) { var br = a.nextElementSibling; if (br && br.tagName === "BR") br.remove(); a.remove(); });
+
+  /* ---------- extra stop, share link, calendar ---------- */
+  $("addStop").addEventListener("click", function () { $("viaBox").hidden = false; this.hidden = true; $("via").focus(); });
+  $("rmStop").addEventListener("click", function () { $("viaBox").hidden = true; $("via").value = ""; $("addStop").hidden = false; $("addStop").focus(); });
+  function shareUrl() {
+    var u = location.origin + location.pathname + "?from=" + encodeURIComponent(S.fromText) + "&to=" + encodeURIComponent(S.toText) + "&items=" + encodeURIComponent($("items").value) + "&date=" + iso(S.date) + (S.helpers ? "&helpers=" + S.helpers : "") + (S.via ? "&via=" + encodeURIComponent(S.viaText) : "");
+    return u;
+  }
+  $("shareBtn").addEventListener("click", function () {
+    var u = shareUrl(), msg = $("shareMsg");
+    if (navigator.share) { navigator.share({ title: "My M6 Freight price", url: u }).catch(function () {}); return; }
+    if (navigator.clipboard) navigator.clipboard.writeText(u).then(function () { msg.textContent = "Link copied. It reopens this price."; }, function () { msg.textContent = u; });
+    else msg.textContent = u;
+  });
+  function icsHref() {
+    var d = S.date, p = function (n) { return String(n).padStart(2, "0"); }, ds = d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate());
+    var e = new Date(d); e.setDate(e.getDate() + 1); var de = e.getFullYear() + p(e.getMonth() + 1) + p(e.getDate());
+    var t = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//M6 Freight//Booking//EN", "BEGIN:VEVENT", "UID:" + S.ref + "@m6freight", "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z",
+      "DTSTART;VALUE=DATE:" + ds, "DTEND;VALUE=DATE:" + de, "SUMMARY:M6 Freight " + S.ref + " (request - confirmed on WhatsApp)",
+      "DESCRIPTION:" + (S.fromText + " to " + S.toText).replace(/[,;]/g, " ") + ". Time: " + ($("cSlot").value || "we confirm") + ". Contact 0" + co.phoneIntl.slice(2), "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+    return "data:text/calendar;charset=utf-8," + encodeURIComponent(t);
+  }
   /* ---------- pre-filled links from the quote desk, or a remembered quote ---------- */
   var qs = new URLSearchParams(location.search);
   if (qs.get("from") && qs.get("to")) {
     $("from").value = qs.get("from"); $("to").value = qs.get("to"); $("items").value = qs.get("items") || "";
     var qd = qs.get("date");
     if (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) { var qp = qd.split("-"), qdd = new Date(+qp[0], +qp[1] - 1, +qp[2]); if (qdd >= earliest()) { $("wPick").checked = true; pick.hidden = false; pick.value = qd; } else S.dateNote = true; } else if (qd) S.dateNote = true;
+    if (qs.get("via")) { $("viaBox").hidden = false; $("addStop").hidden = true; $("via").value = qs.get("via"); }
     var qh = Math.max(0, Math.min(3, parseInt(qs.get("helpers"), 10) || 0));
     if (qh) S.pendingHelpers = qh;
     $("quoteForm").requestSubmit ? $("quoteForm").requestSubmit() : $("goBtn").click();

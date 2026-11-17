@@ -2,7 +2,7 @@
 <html lang="en-GB"><head><meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>Go-live checklist</title><link rel="stylesheet" href="styles.css?v=20261118f"></head>
+<title>Go-live checklist</title><link rel="stylesheet" href="styles.css?v=20261118h"></head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div><header class="top"><div class="wrap"><a class="logo" href="index.html"><span class="shield">M6</span>FREIGHT</a></div></header>
 <main class="wrap" style="max-width:760px;padding:30px 20px 60px;display:grid;gap:14px">
@@ -19,11 +19,12 @@
 <li>Remove the TEST banner, the noindex tags and robots.txt; point the domain at the site; redirect m6freight.co.uk.</li>
 <li>Decide where bookings are logged (optional webhook) so none depend on the customer pressing WhatsApp.</li>
 </ol>
-<script src="config.js?v=20261118f"></script>
+<script src="config.js?v=20261118h"></script>
 <script>
 (function(){var C=window.M6_CONFIG,co=C.company,P=C.payments,rows=[
-["No test discount code","promoCodes",C.promoCodes&&C.promoCodes.TEST10?"":"none","Remove TEST10; every real code needs an end date and terms"],
-["Partner drivers page","driversWanted",String(C.driversWanted),"Only true when there is real overflow work, partner terms agreed (solicitor) and his insurance covers subcontracted loads (broker)"],
+["Discount codes","promoCodes",(function(){var pc=C.promoCodes||{},k=Object.keys(pc);if(!k.length)return "none";var bad=k.filter(function(c){var p=pc[c];return c.toUpperCase()==="TEST10"||typeof p!=="object"||!p.ends||!p.terms;});return bad.length?"":k.join(", ");})(),"Remove TEST10. Every real code needs an end date and terms shown, and must not be re-run as a fake 'limited time' offer"],
+["Owner-drives vs partner drivers","ownerDriven + driversWanted",co.ownerDriven&&C.driversWanted?"":"consistent","If both are on, the site says 'the owner drives most jobs' and partners only with the customer's OK: confirm that is true"],
+["Partner drivers page","driversWanted",String(C.driversWanted),"Only true when there is real overflow work, partner terms and right-to-work position agreed with a solicitor (rules widened to subcontractors from 1 Oct 2026), and his broker confirms in writing that subcontracted loads are covered"],
 ["SAMPLE content OFF","demoMode",C.demoMode?"":"off","MUST be false before go-live: sample reviews, stats, trips and tracking are made up (DMCC Act 2024 bans fake reviews)"],
 ["Legal name","company.legalName",co.legalName,"Confirm on Companies House"],
 ["Company number","company.companyNumber",co.companyNumber,"Confirm"],

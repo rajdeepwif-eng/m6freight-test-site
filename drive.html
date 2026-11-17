@@ -7,23 +7,23 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>Drive with us | M6 Freight</title>
 <meta name="description" content="Overflow jobs for checked local van owners.">
-<link rel="stylesheet" href="styles.css?v=20261118f">
+<link rel="stylesheet" href="styles.css?v=20261118h">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
 <header class="top"><div class="wrap"><a class="logo" href="index.html" aria-label="M6 Freight home"><span class="shield">M6</span>FREIGHT</a>
 <nav aria-label="Main"><a href="index.html#reasons">Why us</a><a href="trade.html">Trade</a><a href="track.html">Track a job</a><a href="index.html#faq">FAQ</a><a class="call" href="tel:+447301519319">Call 07301 519319</a></nav></div></header>
 <main>
-<section class="hero"><div class="wrap" style="grid-template-columns:1.1fr 1fr">
+<section class="hero"><div class="wrap">
 <div><h1>Drive with us.<br><em>Overflow work for local vans.</em></h1>
 <p class="sub">When we're fully booked we pass jobs to a small group of local van owners we've checked in person. Fixed price per job, agreed before you take it.</p></div>
 <div class="ph"><picture><source type="image/webp" srcset="img/hero-motorway-800.webp"><img src="img/hero-motorway-800.jpg" alt="White van on a UK motorway" width="800" height="450"></picture></div></div></section>
 <section class="band"><div class="wrap" style="display:grid;gap:16px;max-width:900px">
 <h2 style="margin:0">How it works</h2>
-<ol class="steps"><li><span class="n">1</span><span><b>Tell us about you</b><br>Your van, areas and when you're free. One WhatsApp message.</span></li>
-<li><span class="n">2</span><span><b>We meet and check</b><br>Driving licence, V5C, goods-in-transit and public liability insurance, seen in person. Please don't send documents through this page.</span></li>
-<li><span class="n">3</span><span><b>Get offered jobs</b><br>We send the job, the fixed price and the times. You say yes or no.</span></li>
-<li><span class="n">4</span><span><b>Get paid</b><br>Paid by bank transfer within 7 days of the job, against your invoice.</span></li></ol>
+<ol class="steps"><li><span><b>Tell us about you</b><br>Your van, areas and when you're free. One WhatsApp message.</span></li>
+<li><span><b>We meet and check</b><br>Driving licence, V5C, goods-in-transit and public liability insurance, plus any checks the law requires (such as right to work, where it applies), done before your first job. Please don't send documents through this page.</span></li>
+<li><span><b>Get offered jobs</b><br>We send the job, the fixed price and the times. You say yes or no.</span></li>
+<li><span><b>Get paid</b><br>Paid by bank transfer within 7 days of the job, against your invoice.</span></li></ol>
 <p class="small">You work as an independent business, with your own insurance. Overflow work only: no guaranteed volume. Terms are agreed before your first job.</p>
 </div></section>
 <section class="band" style="background:#fff"><div class="wrap" style="display:grid;gap:14px;max-width:900px">
@@ -32,15 +32,15 @@
 <div class="two"><div class="field"><label for="dName">Your name</label><input id="dName" autocomplete="name"></div><div class="field"><label for="dPhone">Mobile</label><input id="dPhone" type="tel" inputmode="tel" autocomplete="tel"></div></div>
 <div class="two"><div class="field"><label for="dVan">Van size</label><select id="dVan"><option>Small van</option><option>Medium (SWB/MWB)</option><option>Large (LWB)</option><option>Luton with tail-lift</option></select></div><div class="field"><label for="dArea">Areas you cover</label><input id="dArea" placeholder="e.g. Wolverhampton, Telford"></div></div>
 <div class="field"><label for="dIns">Goods-in-transit and public liability insurance?</label><select id="dIns"><option>Yes, both</option><option>One of them</option><option>Not yet</option></select></div>
-<p class="err" id="dErr" hidden></p>
+<p class="err" id="dErr" role="alert" hidden></p>
 <a class="btn btn-wa" id="dSend" href="#" target="_blank" rel="noopener">Apply on WhatsApp</a>
 <p class="small">We use these details only to review your application (see our <a href="privacy.html">privacy notice</a>).</p>
 </form></div></section>
 </main>
 <footer><div class="wrap"><div><h3>M6 Freight</h3><p>M6 FREIGHTUK LTD, registered in England and Wales. Company no. 17059854.</p></div><div><h3>Contact</h3><p>Phone / WhatsApp: <a href="tel:+447301519319">07301 519319</a></p></div><div><h3>Info</h3><p><a href="index.html">Get a price</a><br><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="guides/man-and-van-prices.html">Prices guide</a><br><a href="terms.html">Booking terms</a> · <a href="privacy.html">Privacy</a></p></div></div></footer>
-<script src="config.js?v=20261118f"></script>
+<script src="config.js?v=20261118h"></script>
 <script>(function(){var co=window.M6_CONFIG.company;function $(i){return document.getElementById(i)}
-$("dSend").addEventListener("click",function(e){var n=$("dName").value.trim(),p=$("dPhone").value.replace(/\D/g,"");
+$("dSend").addEventListener("click",function(e){var n=$("dName").value.trim(),p=$("dPhone").value.replace(/\(0\)/g,"").replace(/\D/g,"");
 if(!n||!/^(07\d{9}|447\d{9})$/.test(p)){e.preventDefault();$("dErr").textContent="Add your name and UK mobile number.";$("dErr").hidden=false;return;}
 $("dErr").hidden=true;this.href="https://wa.me/"+co.phoneIntl+"?text="+encodeURIComponent("DRIVER APPLICATION\nName: "+n+"\nMobile: "+$("dPhone").value+"\nVan: "+$("dVan").value+"\nAreas: "+$("dArea").value+"\nInsurance: "+$("dIns").value);});})();</script>
 </body></html>

@@ -16,7 +16,7 @@
 <link rel="preload" as="image" type="image/webp" href="img/hero-motorway-800.webp" media="(max-width: 920px)">
 <title>M6 Freight</title>
 <meta name="description" content="One van, clear all-in prices. Local jobs by the hour, longer trips at a fixed price. Book in a minute, no account. Same-day courier, single items, home moves and trade deliveries.">
-<link rel="stylesheet" href="styles.css?v=20261118f">
+<link rel="stylesheet" href="styles.css?v=20261118h">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
@@ -56,6 +56,8 @@
         <div class="field"><label for="from">Collect from</label><input id="from" autocomplete="postal-code" autocapitalize="characters" spellcheck="false" placeholder="Postcode or town" required></div>
         <div class="field"><label for="to">Deliver to</label><input id="to" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Postcode or town" required></div>
       </div>
+      <div class="field" id="viaBox" hidden><label for="via">Extra stop on the way</label><div style="display:flex;gap:8px"><input id="via" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Postcode or town" style="flex:1"><button type="button" class="btn btn-ghost" id="rmStop" aria-label="Remove extra stop">✕</button></div></div>
+      <button type="button" class="linkbtn" id="addStop">+ Add a stop (collect or drop on the way)</button>
       <div class="field">
         <label for="items">What's moving? Type it like a text</label>
         <textarea id="items" placeholder="e.g. 2 sofas, a fridge and 10 boxes"></textarea>
@@ -116,6 +118,7 @@
         <h3>We read your list as</h3>
         <div class="items" id="itemList"></div>
         <div><div class="fill" aria-hidden="true"><span id="fillBar"></span></div><p class="note" id="fillNote" style="margin-top:6px"></p></div>
+        <p class="small"><button type="button" class="linkbtn" id="shareBtn">Share or save this price</button> <span id="shareMsg" aria-live="polite"></span></p>
         <p class="small">Not sure? <a id="photoLink" href="#" target="_blank" rel="noopener">Send us photos on WhatsApp</a> and we'll fix the price.</p>
       </div>
 
@@ -171,7 +174,7 @@
         <h3>Addresses</h3>
         <div class="field"><label for="cAddrFrom">Full collection address</label><input id="cAddrFrom" autocomplete="off" required></div>
         <div class="field"><label for="cAddrTo">Full delivery address</label><input id="cAddrTo" autocomplete="off" required></div>
-        <div class="field"><label for="cSlot">Collection time</label><select id="cSlot"></select></div>
+        <div class="field"><label for="cSlot">Collection time</label><select id="cSlot" aria-describedby="slotNote"></select><p class="small" id="slotNote" aria-live="polite"></p></div>
         <p class="small" id="addrNote">We share your full addresses only with the driver doing your job.</p>
         <div class="field"><label for="cNotes">Anything the driver should know? (optional)</label><input id="cNotes" placeholder="Parking, floor and lift, access, contact on the day…"></div>
       </div>
@@ -211,6 +214,7 @@
       <div class="refbox" id="dRef"></div>
       <p id="dLine"></p>
       <div style="display:grid;gap:8px" id="dActions"></div>
+      <p class="small" id="dExtras"></p>
     </div>
     <div class="panel">
       <h3>What happens next</h3>
@@ -341,8 +345,8 @@
 <div class="bar" id="bar"><div><div class="note" id="barVan"></div><div class="p tab" id="barPrice"></div></div><button class="btn btn-go" type="button" id="barBook">Book</button></div>
 <a class="wa" id="waFloat" href="#" target="_blank" rel="noopener">WhatsApp us</a>
 
-<script src="config.js?v=20261118f"></script>
-<script src="engine.js?v=20261118f"></script>
-<script src="app.js?v=20261118f"></script>
+<script src="config.js?v=20261118h"></script>
+<script src="engine.js?v=20261118h"></script>
+<script src="app.js?v=20261118h"></script>
 </body>
 </html>

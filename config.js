@@ -66,6 +66,8 @@ window.M6_CONFIG = {
     localMph: 20,              // town driving, for local time estimates
     loadMinutesPerM3: 12,      // loading + unloading time per m³, for local estimates
     loadMinutes: 30,           // loading + unloading allowance for trip time estimates
+    stopFee: 15,               // ASSUMED - confirm: per extra stop on trips
+    stopMinutes: 15,           // ASSUMED - confirm: time added per extra stop on local jobs
     helperHourly: 20,          // extra person, local jobs (per hour)
     helperTripFee: 45,         // extra person, fixed-price trips (per job)
     sameDayPct: 15,
