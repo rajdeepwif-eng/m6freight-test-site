@@ -2,7 +2,7 @@
 <html lang="en-GB"><head><meta charset="utf-8">
 <meta name="robots" content="noindex, nofollow"><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<title>Go-live checklist</title><link rel="stylesheet" href="styles.css?v=20261118c"></head>
+<title>Go-live checklist</title><link rel="stylesheet" href="styles.css?v=20261118e"></head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div><header class="top"><div class="wrap"><a class="logo" href="index.html"><span class="shield">M6</span>FREIGHT</a></div></header>
 <main class="wrap" style="max-width:760px;padding:30px 20px 60px;display:grid;gap:14px">
@@ -19,9 +19,10 @@
 <li>Remove the TEST banner, the noindex tags and robots.txt; point the domain at the site; redirect m6freight.co.uk.</li>
 <li>Decide where bookings are logged (optional webhook) so none depend on the customer pressing WhatsApp.</li>
 </ol>
-<script src="config.js?v=20261118c"></script>
+<script src="config.js?v=20261118e"></script>
 <script>
 (function(){var C=window.M6_CONFIG,co=C.company,P=C.payments,rows=[
+["SAMPLE content OFF","demoMode",C.demoMode?"":"off","MUST be false before go-live: sample reviews, stats, trips and tracking are made up (DMCC Act 2024 bans fake reviews)"],
 ["Legal name","company.legalName",co.legalName,"Confirm on Companies House"],
 ["Company number","company.companyNumber",co.companyNumber,"Confirm"],
 ["Registered office","company.registeredOffice",co.registeredOffice,"Confirm (formation address?)"],
@@ -34,6 +35,10 @@
 ["Google review link","company.googleReviewsUrl",co.googleReviewsUrl,"From his Google Business Profile"],
 ["Google rating / count","company.googleRating",co.googleRating?co.googleRating+" / "+co.googleReviewCount:"","Real figures only; shows at 5+ reviews"],
 ["Driver photo","company.driverPhoto",co.driverPhoto,"Real photo only"],
+["Owner drives every job","company.ownerDriven",String(co.ownerDriven),"Only true if he does every job himself"],
+["Driver photo the day before","company.dayBeforePhoto",String(co.dayBeforePhoto),"Only true if he will send it every time"],
+["Delivery photo","company.proofOfDelivery",String(co.proofOfDelivery),"Only true if he will send it every time"],
+["DBS checked","company.dbsChecked",String(co.dbsChecked),"Only true with a current certificate"],
 ["Padding kit owned","company.paddingStandard",String(co.paddingStandard),"Only true once used on every job"],
 ["Damage promise","company.damagePromise",co.damagePromise,"Insurer + solicitor"],
 ["Base town","base.place",C.base.place,"His real base"],

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>Trade accounts | M6 Freight</title>
+<meta name="description" content="Trade accounts for local businesses: one-message booking, agreed rates, monthly invoice.">
+<link rel="stylesheet" href="styles.css?v=20261118e">
+</head>
+<body>
+<div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
+<header class="top"><div class="wrap"><a class="logo" href="index.html" aria-label="M6 Freight home"><span class="shield">M6</span>FREIGHT</a>
+<nav aria-label="Main"><a href="index.html#reasons">Why us</a><a href="trade.html">Trade</a><a href="track.html">Track a job</a><a href="index.html#faq">FAQ</a><a class="call" href="tel:+447301519319">Call 07301 519319</a></nav></div></header>
+<main>
+<section class="hero"><div class="wrap" style="grid-template-columns:1.1fr 1fr">
+<div><h1>Trade accounts.<br><em>One message, it's booked.</em></h1>
+<p class="sub">For furniture and appliance shops, builders' merchants, estate agents and workshops. Agreed rates, monthly invoice, delivery confirmation on WhatsApp.</p></div>
+<div class="ph"><picture><source type="image/webp" srcset="img/business-pallets-800.webp"><img src="img/business-pallets-800.jpg" alt="White van at a loading bay with two pallets" width="800" height="450"></picture></div></div></section>
+<section class="band"><div class="wrap" style="display:grid;gap:16px">
+<h2 style="margin:0">Account rates</h2>
+<p class="small">Standard rates shown. Regular accounts agree their own rates. <span id="rcNote"></span></p>
+<div class="tw"><table class="compare"><thead><tr><th>Van</th><th>Fits</th><th>Local, per hour</th><th>Trips, per mile</th><th>Minimum trip</th></tr></thead><tbody id="rateCard"></tbody></table></div>
+</div></section>
+<section class="band" style="background:#fff"><div class="wrap" style="display:grid;gap:16px;max-width:900px">
+<h2 style="margin:0">Multi-drop booking</h2>
+<p>Add each drop, then send it to us in one WhatsApp message. We reply with one price for the whole run.</p>
+<form id="md" class="panel" novalidate>
+<div class="two"><div class="field"><label for="mdCo">Company</label><input id="mdCo" autocomplete="organization"></div><div class="field"><label for="mdDate">Date</label><input id="mdDate" type="date"></div></div>
+<div class="field"><label for="mdFrom">Collect from</label><input id="mdFrom" placeholder="Postcode or address"></div>
+<div id="drops"></div>
+<button type="button" class="btn btn-ghost" id="addDrop" style="width:max-content">+ Add a drop</button>
+<div class="field"><label for="mdNotes">Notes (optional)</label><input id="mdNotes" placeholder="Pallets, tail-lift, time windows…"></div>
+<p class="err" id="mdErr" hidden></p>
+<a class="btn btn-wa" id="mdSend" href="#" target="_blank" rel="noopener">Send run on WhatsApp</a>
+</form></div></section>
+<section class="band"><div class="wrap" style="display:grid;gap:14px;max-width:900px">
+<h2 style="margin:0">Open an account</h2>
+<form id="ac" class="panel" novalidate>
+<div class="two"><div class="field"><label for="acCo">Company name</label><input id="acCo" autocomplete="organization"></div><div class="field"><label for="acName">Your name</label><input id="acName" autocomplete="name"></div></div>
+<div class="two"><div class="field"><label for="acPhone">Mobile</label><input id="acPhone" type="tel" inputmode="tel" autocomplete="tel"></div><div class="field"><label for="acVol">Typical jobs a month</label><select id="acVol"><option>1–4</option><option>5–15</option><option>16–40</option><option>40+</option></select></div></div>
+<div class="field"><label for="acWhat">What do you usually send?</label><input id="acWhat" placeholder="e.g. sofas to customers, pallets of tiles"></div>
+<a class="btn btn-go" id="acSend" href="#" target="_blank" rel="noopener">Apply on WhatsApp</a>
+<p class="small">Accounts are approved after a quick check. Invoice terms are agreed when we open the account.</p>
+</form></div></section>
+</main>
+<footer><div class="wrap"><div><h3>M6 Freight</h3><p>M6 FREIGHTUK LTD, registered in England and Wales. Company no. 17059854.</p></div><div><h3>Contact</h3><p>Phone / WhatsApp: <a href="tel:+447301519319">07301 519319</a></p></div><div><h3>Info</h3><p><a href="index.html">Get a price</a><br><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="guides/man-and-van-prices.html">Prices guide</a><br><a href="terms.html">Booking terms</a> · <a href="privacy.html">Privacy</a></p></div></div></footer>
+<script src="config.js?v=20261118e"></script>
+<script>(function(){var C=window.M6_CONFIG,co=C.company,P=C.pricing;function $(i){return document.getElementById(i)}function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+$("rateCard").innerHTML=C.vans.map(function(v){return "<tr><td><b>"+esc(v.name)+"</b><br><span class='small'>"+esc(v.example)+"</span></td><td>"+v.capacityM3+" m³</td><td>£"+v.hourly+"</td><td>£"+v.perMile.toFixed(2)+"</td><td>£"+v.minimum+"</td></tr>"}).join("");
+$("rcNote").textContent="Extra person £"+P.helperHourly+"/hr local or £"+P.helperTripFee+" per trip. "+(co.vatRegistered?"Prices include VAT.":"Not VAT registered.");
+var d=new Date();d.setDate(d.getDate()+1);$("mdDate").value=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+var n=0;function addDrop(){n++;var w=document.createElement("div");w.className="two";w.innerHTML='<div class="field"><label for="dp'+n+'">Drop '+n+'</label><input id="dp'+n+'" class="dp" placeholder="Postcode or address"></div><div class="field"><label for="dw'+n+'">What</label><input id="dw'+n+'" class="dw" placeholder="e.g. 1 sofa"></div>';$("drops").appendChild(w);}
+addDrop();addDrop();$("addDrop").addEventListener("click",function(){if(n<12)addDrop();});
+function wa(t){return "https://wa.me/"+co.phoneIntl+"?text="+encodeURIComponent(t)}
+$("mdSend").addEventListener("click",function(e){var ps=[].slice.call(document.querySelectorAll(".dp")),ws=[].slice.call(document.querySelectorAll(".dw"));var lines=[];ps.forEach(function(p,i){if(p.value.trim())lines.push((lines.length+1)+". "+p.value.trim()+(ws[i].value.trim()?" - "+ws[i].value.trim():""));});
+if(!$("mdFrom").value.trim()||!lines.length){e.preventDefault();$("mdErr").textContent="Add a collection address and at least one drop.";$("mdErr").hidden=false;return;}
+$("mdErr").hidden=true;this.href=wa("TRADE RUN"+($("mdCo").value.trim()?" - "+$("mdCo").value.trim():"")+"\nDate: "+$("mdDate").value+"\nCollect: "+$("mdFrom").value.trim()+"\nDrops:\n"+lines.join("\n")+($("mdNotes").value.trim()?"\nNotes: "+$("mdNotes").value.trim():""));});
+$("acSend").addEventListener("click",function(){this.href=wa("TRADE ACCOUNT APPLICATION\nCompany: "+$("acCo").value+"\nName: "+$("acName").value+"\nMobile: "+$("acPhone").value+"\nJobs a month: "+$("acVol").value+"\nUsually sends: "+$("acWhat").value);});
+})();</script>
+</body></html>

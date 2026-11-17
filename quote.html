@@ -6,7 +6,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <title>M6 Freight Quote Desk</title>
 <meta name="robots" content="noindex">
-<link rel="stylesheet" href="styles.css?v=20261118c">
+<link rel="stylesheet" href="styles.css?v=20261118e">
 <style>
   .desk{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:24px 0 60px}
   @media (max-width:900px){.desk{grid-template-columns:1fr}}
@@ -58,8 +58,8 @@
     <p class="note">The link in the reply opens the website with this job already filled in, so the customer just taps Book.</p>
   </div>
 </main>
-<script src="config.js?v=20261118c"></script>
-<script src="engine.js?v=20261118c"></script>
+<script src="config.js?v=20261118e"></script>
+<script src="engine.js?v=20261118e"></script>
 <script>
 (function(){
   var C=window.M6_CONFIG,M=window.M6,$=function(i){return document.getElementById(i)};
@@ -68,13 +68,13 @@
   var PC=/\b([A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2})\b/gi;
   $("readBtn").addEventListener("click",function(){
     var t=$("paste").value, pcs=t.match(PC)||[];
-    $("from").value=""; $("to").value=""; $("items").value=""; $("res").hidden=true;
+    $("from").value=""; $("to").value=""; $("items").value=""; $("res").hidden=true; $("helpers").value="0"; $("err").hidden=true;
     if(pcs[0])$("from").value=pcs[0].toUpperCase(); if(pcs[1])$("to").value=pcs[1].toUpperCase();
-    if(pcs.length<2){ var m=t.match(/from\s+([A-Za-z][A-Za-z \-]+?)\s+to\s+([A-Za-z][A-Za-z \-]+?)(?=[,.?!]|\s+on\b|\s+for\b|\s+next\b|\s+this\b|$)/i)||t.match(/\b([A-Z][a-z]+(?:[ -][A-Za-z]+)?)\s+to\s+([A-Z][a-z]+(?:[ -][A-Za-z]+)?)/);
+    if(pcs.length<2){ var m=t.match(/from\s+([A-Za-z][A-Za-z' \-]+?)\s+to\s+([A-Za-z][A-Za-z' \-]+?)(?=[,.?!]|\s+(?:on|for|next|this|today|tomorrow|tmrw|please|pls|asap|thanks|thank|cheers|by|at|in|around|before|after|monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|$)/i)||t.match(/\b([A-Z][a-z]+(?:[ -][A-Za-z]+)?)\s+to\s+([A-Z][a-z]+(?:[ -][A-Za-z]+)?)/);
       if(m){ if(!$("from").value)$("from").value=m[1].trim(); if(!$("to").value)$("to").value=m[2].trim(); } }
-    var rest=t.replace(PC," ").replace(/\b(hi|hello|hey|please|can you|could you|move|moving|deliver|collect|from|to|on|a quote|quote|price|for|how much|thanks|thank you|cheers|today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week)\b/gi," ");
+    var rest=t.replace(PC," ").replace(/\b(hi|hello|hey|please|can you|could you|move|moving|deliver|collect|from|to|on|a quote|quote|price|for|how much|thanks|thank you|cheers|hiya|need|needs|want|wanted|looking|got|have|i|we|me|my|our|is|it|be|asap|pls|ta|today|tomorrow|monday|tuesday|wednesday|thursday|friday|saturday|sunday|next week|this week)\b/gi," ");
     var items=M.readItems(rest).filter(function(i){return i.known;});
-    if(items.length)$("items").value=items.map(function(i){return (i.qty>1?i.qty+" ":"")+i.name;}).join(", ");
+    if(items.length)$("items").value=items.map(function(i){return i.qty>1?i.qty+" "+(/s$/.test(i.name)?i.name:i.name+"s"):i.name;}).join(", ");
     var days=["sunday","monday","tuesday","wednesday","thursday","friday","saturday"], low=t.toLowerCase();
     if(low.indexOf("tomorrow")>-1){var x=new Date();x.setDate(x.getDate()+1);$("date").value=iso(x);}
     else if(low.indexOf("today")>-1){$("date").value=iso(new Date());}
@@ -82,9 +82,13 @@
   });
   $("f").addEventListener("submit",function(e){
     e.preventDefault(); $("err").hidden=true;
+    var off=M.offshore($("from").value)||M.offshore($("to").value);
+    if(off){$("err").textContent=off+" needs a ferry: price this one by hand (ferry fare + extra time).";$("err").hidden=false;$("res").hidden=true;return;}
     Promise.all([M.locate($("from").value),M.locate($("to").value),M.locate(C.base.place)]).then(function(r){
       if(!r[0]||!r[1]){$("err").textContent="Couldn't find one of the places. Use a postcode.";$("err").hidden=false;$("res").hidden=true;return;}
       var p=$("date").value.split("-"); st.date=new Date(+p[0],+p[1]-1,+p[2]);
+      var t0=new Date();t0.setHours(0,0,0,0);
+      if(p.length!==3||isNaN(st.date)||st.date<t0){$("err").textContent="Pick a date from today onwards.";$("err").hidden=false;$("res").hidden=true;return;}
       st.miles=M.miles(r[0],r[1]); st.items=M.readItems($("items").value||"parcel"); st.vol=M.volume(st.items);
       st.helpers=parseInt($("helpers").value,10); st.van=M.bestVan(st.vol).id; st.r=r;
       st.local=!!r[2]&&M.miles(r[2],r[0])<=C.base.localRadiusMiles&&M.miles(r[2],r[1])<=C.base.localRadiusMiles;
@@ -105,7 +109,7 @@
     var name=$("cname").value.trim(); var co=C.company;
     var who=co.ownerFirstName?co.ownerFirstName+" at M6 Freight":"M6 Freight";
     var approx=(st.r[0].approx||st.r[1].approx);
-    var priceLine=st.local?("About "+M.money(q.total)+" (about "+(q.hours)+" hrs at £"+q.hourlyRate+"/hr: van, driver and fuel, no stairs fee). You pay for the actual time."+(approx?" Confirmed once we have your full address.":"")):((st.r[0].approx||st.r[1].approx)?"Estimated price (confirmed once we have your full address): ":"Fixed price: ")+M.money(q.total+(co.vatRegistered?" including VAT":"")+", all-in (van, driver, fuel; no stairs fee).");
+    var priceLine=st.local?("About "+M.money(q.total)+" (about "+(q.hours)+" hrs at £"+q.hourlyRate+"/hr: van, driver and fuel, no stairs fee). You pay for the actual time."+(approx?" Confirmed once we have your full address.":"")):((st.r[0].approx||st.r[1].approx)?"Estimated price (confirmed once we have your full address): ":"Fixed price: ")+M.money(q.total)+(co.vatRegistered?" including VAT":"")+", all-in (van, driver, fuel; no stairs fee).";
     var opener=$("oldEnq").checked?(" You asked us for a price recently. We've changed to simpler all-in pricing, so here's your updated price:"):" Thanks for your enquiry.";
     $("msg").textContent="Hi"+(name?" "+name:"")+", it's "+who+"."+opener+"\n\n"+
       $("from").value+" to "+$("to").value+" ("+st.miles+" miles)\n"+

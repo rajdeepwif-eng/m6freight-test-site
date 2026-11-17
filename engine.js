@@ -91,6 +91,18 @@
     });
   }
 
+
+  /* Places a van can't reach by road from GB: priced by hand */
+  var OFF = [[/^BT\d/i,"Northern Ireland"],[/^IM\d/i,"the Isle of Man"],[/^JE\d/i,"Jersey"],[/^GY\d/i,"Guernsey"],[/^ZE\d/i,"Shetland"],[/^HS\d/i,"the Western Isles"],
+    [/^KW(1[5-7])\b/i,"Orkney"],[/^PO(3\d|4[01])\b/i,"the Isle of Wight"],[/^TR2[1-5]\b/i,"the Isles of Scilly"],[/^KA2[78]\b/i,"Arran or Cumbrae"],
+    [/^PA(2[0-9]|3[0-9]|4[0-9]|6[0-9]|7[0-8])\b/i,"a Scottish island"],[/^IV(4[1-9]|5[156])\b/i,"Skye or the Small Isles"]];
+  var OFFWORDS = [[/belfast|northern ireland|derry|lisburn|newry/i,"Northern Ireland"],[/isle of wight|newport,? iow|\bryde\b|\bcowes\b/i,"the Isle of Wight"],[/isle of man|douglas,? iom/i,"the Isle of Man"],[/jersey|guernsey/i,"the Channel Islands"],[/orkney|shetland|stornoway|isle of skye|isles of scilly/i,"a Scottish or offshore island"]];
+  function offshore(q) {
+    q = clean(q || ""); var pc = q.replace(/\s+/g, " ").toUpperCase().split(" ")[0];
+    for (var i = 0; i < OFF.length; i++) if (OFF[i][0].test(pc)) return OFF[i][1];
+    for (var j = 0; j < OFFWORDS.length; j++) if (OFFWORDS[j][0].test(q)) return OFFWORDS[j][1];
+    return null;
+  }
   function miles(a, b) {
     var R = 3958.8, toR = Math.PI / 180;
     var dLat = (b.lat - a.lat) * toR, dLng = (b.lng - a.lng) * toR;
@@ -124,6 +136,10 @@
     parts.forEach(function (raw) {
       var s = raw.replace(/[^a-z0-9 \-]/g, " ").replace(/\s+/g, " ").trim();
       if (!s) return;
+      s = s.replace(/^(?:a\s+)?couple(?:\s+of)?\s+/, "2 ").replace(/^(?:a\s+)?few\s+/, "3 ").replace(/^(?:a|an|some|my|the)\s+/, "");
+      var home = s.match(/(\d+|one|two|three|four|five|six)\s*-?\s*bed(?:room)?(?:ed)?\s+(house|flat|home|bungalow|apartment|property|move)/);
+      if (home) { var nb = parseInt(home[1], 10) || WORDNUM[home[1]] || 1; out.push({ name: nb + "-bed " + home[2], qty: 1, m3: 6 + 8 * nb, heavy: true, known: true, home: true }); return; }
+      if (/^studio\b/.test(s)) { out.push({ name: "studio flat", qty: 1, m3: 9, heavy: true, known: true, home: true }); return; }
       var qty = 1, m = s.match(/^(\d+)\s*x?\s*/);
       var unitAfter = m && /^(-?\s*)(seater|seat|inch|in\b|"|kg|ft|foot|feet|door|piece|pc|drawer|litre|ltr|l\b|cm|mm|m\b|ton|tonne|burner|ring|bed(room)?s?\b)/.test(s.slice(m[0].length));
       if (m && !unitAfter) { qty = parseInt(m[1], 10) || 1; s = s.slice(m[0].length); }
@@ -195,5 +211,5 @@
   }
 
   window.M6 = { locate: locate, miles: miles, readItems: readItems, volume: volume, needsTwo: needsTwo, bestVan: bestVan,
-    price: price, maxM3: function () { return C.vans[C.vans.length - 1].capacityM3 * 0.9; }, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
+    offshore: offshore, price: price, maxM3: function () { return C.vans[C.vans.length - 1].capacityM3 * 0.9; }, etaText: etaText, money: money, ref: ref, postLead: postLead, isToday: isToday };
 })();

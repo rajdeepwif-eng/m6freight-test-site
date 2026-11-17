@@ -30,7 +30,8 @@
   $("bizWa").href = wa("Hi M6 Freight, I'd like a trade account. Company: ... Typical jobs: ...");
   $("bizInv").textContent = "Monthly invoice, " + PAY.businessInvoiceDays + "-day terms (approved accounts)";
   $("flexPct").textContent = P.flexiblePct;
-  var promises = ["No account needed", "We aim to reply within " + co.replyPromiseMinutes + " min · " + co.hours, "Free date changes up to " + P.freeChangeHours + "h before"];
+  var minTrip = Math.min.apply(null, C.vans.map(function (v) { return v.minimum; }));
+  var promises = ["Local from £" + minRate + "/hr · trips from £" + minTrip, "No account needed", "Free date changes up to " + P.freeChangeHours + "h before"];
   $("promises").innerHTML = promises.map(function (p) { return '<span class="pill">' + esc(p) + "</span>"; }).join("");
   var localTxt = "Jobs within " + C.base.localRadiusMiles + " miles of " + C.base.place + " are charged by the hour: from £" + minRate + "/hr on weekdays for van and driver, fuel included (+" + P.weekendPct + "% at weekends, +" + P.sameDayPct + "% for same-day; extra people £" + P.helperHourly + "/hr each). " + P.minimumHours + "-hour minimum, then " + P.incrementMinutes + "-minute steps. The clock starts when we arrive at your door and stops when the job's done. There's no fee for stairs; they just take the time they take.";
   $("faqHourly").textContent = localTxt + " We show you an estimate before you book; you pay for the actual time.";
@@ -50,10 +51,21 @@
   if (co.ownerDriven) R.push(["The owner drives your job", "The person you message is the person who turns up" + (co.dbsChecked ? ", DBS checked." : ".") + (co.dayBeforePhoto ? " Driver photo sent the day before." : "")]);
   if (co.paddingStandard) R.push(["Padded, every time", "Blankets and wrap on every piece, door-frame and floor protection in your home. Standard, not an extra."]);
   if (co.damagePromise) R.push(["Our damage promise", co.damagePromise + (co.claimReplyHours ? " We reply to any damage report within " + co.claimReplyHours + " hours." : "")]);
-  else if (co.proofOfDelivery) R.push(["Proof at every step", "Photos at loading and at delivery, sent to you on WhatsApp."]);
+  else if (co.proofOfDelivery) R.push(["Proof at every step", "A photo when it's delivered, sent to you on WhatsApp."]);
   if (co.goodsInTransitCover) R.push(["Insured", "Goods in transit cover up to " + co.goodsInTransitCover + (co.publicLiabilityCover ? ", public liability " + co.publicLiabilityCover : "") + "."]);
   R.push(["A real, registered company", esc(co.legalName) + ", company no. " + esc(co.companyNumber) + '. <a href="' + chUrl + '" target="_blank" rel="noopener">Check us on Companies House</a>.']);
-  $("reasonCards").innerHTML = R.map(function (r) { return '<div class="tile reason"><h3>' + esc(r[0]) + "</h3><p>" + (r[1].indexOf("<a ") > -1 ? r[1] : esc(r[1])) + "</p></div>"; }).join("");
+  var ICON = {
+    price: '<path d="M4 12l8-8h8v8l-8 8z"/><circle cx="16" cy="8" r="1.6"/>',
+    wallet: '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M16 12h5M3 9h14"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    person: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+    pad: '<rect x="4" y="5" width="16" height="14" rx="3"/><path d="M4 10h16M4 14h16"/>',
+    shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
+    camera: '<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l2-3h4l2 3"/>',
+    building: '<path d="M4 21V5l8-2v18M12 9h8v12M7 8h2M7 12h2M7 16h2M15 13h2M15 17h2"/>'
+  };
+  function iconFor(t) { t = t.toLowerCase(); return t.indexOf("pric") > -1 ? ICON.price : t.indexOf("deposit") > -1 ? ICON.wallet : t.indexOf("arrival") > -1 ? ICON.clock : t.indexOf("owner") > -1 ? ICON.person : t.indexOf("padded") > -1 ? ICON.pad : t.indexOf("damage") > -1 || t.indexOf("insured") > -1 ? ICON.shield : t.indexOf("proof") > -1 ? ICON.camera : ICON.building; }
+  $("reasonCards").innerHTML = R.map(function (r) { return '<div class="tile reason"><svg class="ricon" viewBox="0 0 24 24" aria-hidden="true">' + iconFor(r[0]) + '</svg><h3>' + esc(r[0]) + "</h3><p>" + (r[1].indexOf("<a ") > -1 ? r[1] : esc(r[1])) + "</p></div>"; }).join("");
 
   /* Meet your driver: only with a REAL photo */
   if (co.driverPhoto) {
@@ -74,20 +86,42 @@
   ];
   $("howSteps").innerHTML = steps.map(function (s) { return "<li><b>" + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></li>"; }).join("");
   $("padding").hidden = !co.paddingStandard;
+  $("areaLinks").innerHTML = "Areas: " + (C.base.towns || []).map(function (t) { return '<a href="areas/' + t.toLowerCase().replace(/[^a-z]+/g, "-") + '.html">' + esc(t) + "</a>"; }).join(" · ");
   $("areaLine").textContent = "Local hourly pricing within " + C.base.localRadiusMiles + " miles of " + C.base.place + ", including:";
-  $("areaTowns").innerHTML = (C.base.towns || []).map(function (t) { return '<span class="chip">' + esc(t) + "</span>"; }).join("") + '<span class="chip">Anywhere in the UK at a fixed price</span>';
+  $("areaTowns").innerHTML = (C.base.towns || []).map(function (t) { return '<span class="chip">' + esc(t) + "</span>"; }).join("") + '<span class="chip alt">Anywhere in the UK at a fixed price</span>';
 
-  if (co.googleRating && +co.googleReviewCount >= 5) {
-    $("rateBar").hidden = false; $("rateBar").href = co.googleReviewsUrl || "#reviews";
-    $("rateBar").textContent = "★ " + co.googleRating + " from " + co.googleReviewCount + " Google reviews";
+  /* ---------- reviews, stats, driver: real data, or clearly-labelled SAMPLE data in demo mode ---------- */
+  var DEMO = !!C.demoMode, SM = C.sample || {}, SAMPLE = '<span class="sample">SAMPLE</span>';
+  var rating = co.googleRating && +co.googleReviewCount >= 5 ? { r: co.googleRating, n: co.googleReviewCount, demo: false } : (DEMO ? { r: SM.rating, n: SM.reviewCount, demo: true } : null);
+  if (rating) {
+    $("rateBar").hidden = false; $("rateBar").href = rating.demo ? "#reviews" : (co.googleReviewsUrl || "#reviews");
+    $("rateBar").innerHTML = "★★★★★ " + esc(rating.r) + " from " + esc(rating.n) + " Google reviews" + (rating.demo ? " " + SAMPLE : "");
+  }
+  if (DEMO && SM.reviews && !(co.googleRating && +co.googleReviewCount >= 5)) {
+    $("reviews").hidden = false;
+    $("revLine").innerHTML = "<b>" + esc(SM.rating) + " ★</b> from " + esc(SM.reviewCount) + " Google reviews " + SAMPLE;
+    $("revGrid").innerHTML = SM.reviews.map(function (r) { return '<figure class="rev"><div class="stars" aria-label="' + r[1] + ' out of 5">' + "★★★★★".slice(0, r[1]) + '<span class="off">' + "★★★★★".slice(r[1]) + "</span></div><blockquote>" + esc(r[2]) + "</blockquote><figcaption>" + esc(r[0]) + " " + SAMPLE + "</figcaption></figure>"; }).join("");
+  }
+  if (DEMO && SM.stats) {
+    $("stats").hidden = false;
+    $("statStrip").innerHTML = SM.stats.map(function (s) { return '<div class="statbox"><b>' + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></div>"; }).join("") + '<div class="statbox note">' + SAMPLE + "<span>Example figures for the test site</span></div>";
+  }
+  if (DEMO && !co.driverPhoto) {
+    $("driver").hidden = false;
+    $("driverImg").parentNode.innerHTML = '<div class="phph"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>Real photo of the owner with the van goes here</span>' + SAMPLE + "</div>";
+    $("driverH").textContent = "Meet " + (co.ownerFirstName || "the owner");
+    $("driverP").textContent = "He owns M6 Freight and drives every job himself. You'll get his photo and the van's registration on WhatsApp the day before, so you know exactly who's coming.";
+  }
+  if (rating && !rating.demo) {
     $("reviews").hidden = false;
     $("revLine").innerHTML = "<b>" + esc(co.googleRating) + " ★</b> from " + esc(co.googleReviewCount) + " Google reviews" + (co.googleReviewsUrl ? ' · <a href="' + esc(co.googleReviewsUrl) + '" target="_blank" rel="noopener">Read them all on Google</a>' : "");
   }
-  if (C.returnTrips && C.returnTrips.length) {
+  var TRIPS = (C.returnTrips && C.returnTrips.length) ? C.returnTrips : (DEMO && SM.trips ? SM.trips.map(function (t) { var d = new Date(); d.setDate(d.getDate() + parseInt(t.date, 10)); return { from: t.from, to: t.to, date: iso(d), price: t.price, van: t.van, demo: true }; }) : []);
+  if (TRIPS.length) {
     $("returns").hidden = false;
-    $("tripList").innerHTML = C.returnTrips.map(function (t) {
+    $("tripList").innerHTML = TRIPS.map(function (t) {
       var d = new Date(t.date + "T12:00:00");
-      return '<div class="trip"><b>' + esc(t.from) + " → " + esc(t.to) + '</b><span class="small">' + esc(fmtDate(d)) + " · " + esc((C.vans.filter(function (v) { return v.id === t.van; })[0] || {}).name || "Van") + '</span><span class="tp tab">' + M.money(t.price) + '</span><a class="btn btn-wa" href="' + wa("Hi M6 Freight, I'd like the return trip " + t.from + " → " + t.to + " on " + fmtDate(d) + " at " + M.money(t.price) + ".") + '" target="_blank" rel="noopener">Book this trip</a></div>';
+      return '<div class="trip"><b>' + esc(t.from) + " → " + esc(t.to) + (t.demo ? " " + SAMPLE : "") + '</b><span class="small">' + esc(fmtDate(d)) + " · " + esc((C.vans.filter(function (v) { return v.id === t.van; })[0] || {}).name || "Van") + '</span><span class="tp tab">' + M.money(t.price) + '</span><a class="btn btn-wa" href="' + wa("Hi M6 Freight, I'd like the return trip " + t.from + " → " + t.to + " on " + fmtDate(d) + " at " + M.money(t.price) + ".") + '" target="_blank" rel="noopener">Book this trip</a></div>';
     }).join("");
   }
   $("fCompany").innerHTML = esc(co.legalName) + ", registered in " + esc(co.registeredIn) + "<br>Company no. " + esc(co.companyNumber) + "<br>Registered office: " + esc(co.registeredOffice) + (co.tradingAddress ? "<br>Trading address: " + esc(co.tradingAddress) : "") + (co.vatRegistered ? "" : "<br>Not VAT registered");
@@ -130,6 +164,9 @@
     var f = $("from").value.trim(), t = $("to").value.trim();
     function fail(m) { err.textContent = m; err.hidden = false; $("results").hidden = true; $("bar").classList.remove("on"); document.body.classList.remove("has-bar"); }
     if (!f || !t) { fail("Add where we collect from and where it's going."); return; }
+    $("checkout").hidden = true; $("done").hidden = true;
+    var off = M.offshore(f) || M.offshore(t);
+    if (off) { fail(off + " needs a ferry crossing, so we price it by hand. Send the details on WhatsApp and we'll reply with a price."); err.innerHTML = esc(err.textContent) + ' <a href="' + wa("Hi M6 Freight, I need a price for a job to/from " + off + ": " + f + " to " + t + ". Items: " + $("items").value) + '" target="_blank" rel="noopener">Message us</a>'; return; }
     var when = chosenDate();
     if (!when) { fail("Choose a date from " + fmtDate(earliest()) + " onwards."); return; }
     if (!$("items").value.trim()) $("items").value = "parcel";
@@ -148,6 +185,7 @@
       if (S.pendingHelpers) { S.helpers = S.pendingHelpers; S.helpersTouched = true; S.pendingHelpers = 0; }
       S.flexible = false; $("flex").checked = false;
       showResults(true);
+      if (S.dateNote) { S.dateNote = false; var n = document.createElement("span"); n.className = "note"; n.textContent = " The date in your link wasn't available, so we've shown " + fmtDate(S.date) + ". Pick another day below."; $("bWhen").appendChild(n); }
       M.postLead({ type: "price_viewed", from: f, to: t, miles: S.miles, local: S.local, items: $("items").value, date: iso(S.date), price: current().total, van: S.vanId, at: new Date().toISOString() });
     });
   });
@@ -207,11 +245,11 @@
     $("helpers").textContent = S.helpers;
 
     countTo($("bPrice"), q.total);
-    $("bMode").textContent = S.local ? "Local · hourly, all-in" : "Trip · fixed price, all-in";
+    $("bMode").textContent = S.local ? "Local · hourly, all-in" : approx() ? "Trip · estimated price, all-in" : "Trip · fixed price, all-in";
     $("bVan").textContent = v.name + " · just your job";
     $("bSub").textContent = S.local
       ? "Estimate for about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr. You pay for the actual time, in " + P.incrementMinutes + "-min steps." + (co.vatRegistered ? " Inc VAT." : "")
-      : "Fixed price for the whole job" + (co.vatRegistered ? ", including VAT." : ". No VAT to add.");
+      : (approx() ? "Estimated from the postcode area. We confirm the fixed price once we have your full address" : "Fixed price for the whole job") + (co.vatRegistered ? ", including VAT." : ". No VAT to add.");
     $("bWhen").textContent = (M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days, we confirm the day)" : "") + (S.local ? "" : " · about " + M.etaText(S.miles));
     var incl = ["Van and driver, only your goods on board", "Fuel included, no booking or stairs fee", (co.dayBeforePhoto ? "Driver photo the day before, " : "Arrival window the day before, ") + "message when we're 30 min away"];
     if (co.proofOfDelivery) incl.push("Photo when delivered");
@@ -220,8 +258,12 @@
     $("bLines").innerHTML = q.lines.length > 1 ? q.lines.map(function (l) { return "<div><span>" + esc(l.label) + "</span><span>" + (l.amount < 0 ? "−" : "") + M.money(Math.abs(l.amount)) + "</span></div>"; }).join("") : "";
     $("bHold").textContent = "Price held for " + P.priceHoldHours + " hours · free date changes up to " + P.freeChangeHours + "h before.";
     $("waPrice").href = wa("Hi M6 Freight, please hold this price for me:\n" + summaryText(q, null));
-    $("barVan").textContent = v.name + (S.local ? " · estimate" : " · fixed"); $("barPrice").textContent = M.money(q.total);
+    $("barVan").textContent = v.name + (S.local || approx() ? " · estimate" : " · fixed"); $("barPrice").textContent = M.money(q.total);
+    $("waPrice").hidden = oversize; $("bHold").hidden = oversize; $("bLines").hidden = oversize;
+    if (oversize) { $("bMode").textContent = "Too big for one van"; $("bSub").textContent = "This looks like more than one Luton load. Send photos or a list on WhatsApp and we'll price it properly."; $("bar").classList.remove("on"); document.body.classList.remove("has-bar"); }
+    if (!$("checkout").hidden) { if (oversize) $("checkout").hidden = true; else fillCheckout(); }
   }
+  function approx() { return !!(S.from && S.to && (S.from.approx || S.to.approx)); }
 
   var countTimer;
   function countTo(el, target) {
@@ -244,18 +286,24 @@
       "Items: " + itemsTxt,
       "Van: " + van().name + (S.helpers ? " + " + plural(S.helpers, "helper") : ""),
       "Date: " + fmtDate(S.date) + (S.flexible ? " (flexible ±2 days)" : ""),
-      S.local ? "Price: approx " + M.money(q.total) + " (about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr, all-in)" : "Price: " + M.money(q.total) + " fixed, all-in"
+      S.local ? "Price: approx " + M.money(q.total) + " (about " + hrs(q.hours) + " at £" + q.hourlyRate + "/hr, all-in)" : "Price: " + M.money(q.total) + (approx() ? " estimated (area only, to confirm)" : " fixed, all-in")
     ].concat(extra || []).join("\n");
   }
 
   /* ---------- checkout ---------- */
   function within14(d) { return (dayStart(d) - dayStart(new Date())) / 864e5 < 14; }
   function openCheckout() {
-    var q = current();
     $("checkout").hidden = false; showStep(1);
     $("bar").classList.remove("on"); document.body.classList.remove("has-bar");
+    fillCheckout();
+    $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
+    setTimeout(function () { $("cName").focus({ preventScroll: true }); }, 500);
+  }
+  function fillCheckout() {
+    var q = current(), was = document.querySelector('input[name="pay"]:checked');
+    was = was ? was.value : null;
     $("sPrice").textContent = (S.local ? "≈" : "") + M.money(q.total);
-    $("sSummary").innerHTML = "<div><b>" + esc(S.from.label) + "</b> → <b>" + esc(S.to.label) + "</b></div><div>" + esc(van().name) + " · " + S.miles + " miles</div><div>" + esc(M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days)" : "") + "</div><div class='note'>" + (S.local ? "Hourly estimate, all-in" : "Fixed price, all-in") + "</div>";
+    $("sSummary").innerHTML = "<div><b>" + esc(S.from.label) + "</b> → <b>" + esc(S.to.label) + "</b></div><div>" + esc(van().name) + " · " + S.miles + " miles</div><div>" + esc(M.isToday(S.date) ? "Today" : fmtDate(S.date)) + (S.flexible ? " (±2 days)" : "") + "</div><div class='note'>" + (S.local ? "Hourly estimate, all-in" : approx() ? "Estimated price, confirmed with your address" : "Fixed price, all-in") + "</div>";
     var dep = tripDeposit(q.total);
     var opts = S.local ? [
       { id: "after", t: PAY.localDeposit ? "£" + PAY.localDeposit + " deposit, rest when done" : "Pay when the job's done", tag: PAY.localDeposit ? "" : "No deposit", d: "Pay by " + PAY.payMethods + " at the end, for the actual time.", a: PAY.localDeposit ? "£" + PAY.localDeposit + " now" : "£0 now" },
@@ -268,13 +316,12 @@
     $("payOpts").innerHTML = opts.map(function (o, i) {
       return '<input type="radio" name="pay" id="p_' + o.id + '" value="' + o.id + '"' + (i === 0 ? " checked" : "") + '><label for="p_' + o.id + '"><span><b>' + esc(o.t) + (o.tag ? '<span class="tagb">' + esc(o.tag) + "</span>" : "") + '</b><span class="note">' + esc(o.d) + '</span></span><span class="amt tab">' + esc(o.a) + "</span></label>";
     }).join("");
+    if (was && $("p_" + was)) $("p_" + was).checked = true;
     $("earlyBox").hidden = true;
     $("cancelInfo").textContent = C.cancellationPolicy;
     $("cardNote").hidden = S.local && !PAY.localDeposit;
     $("cAddrFrom").placeholder = "House number, street — " + S.fromText;
     $("cAddrTo").placeholder = "House number, street — " + S.toText;
-    $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(function () { $("cName").focus({ preventScroll: true }); }, 500);
   }
   /* ---------- one step per screen on phones ---------- */
   var STEP = 1, STEPS = 3, mqStep = window.matchMedia("(max-width: 920px)");
@@ -299,7 +346,7 @@
     var first = document.querySelector('.cstep[data-step="' + STEP + '"] input'); if (first) first.focus({ preventScroll: true });
     $("checkout").scrollIntoView({ behavior: "smooth", block: "start" });
   });
-  $("stepBack").addEventListener("click", function () { showStep(Math.max(1, STEP - 1)); });
+  $("stepBack").addEventListener("click", function () { showStep(Math.max(1, STEP - 1)); var first = document.querySelector('.cstep[data-step="' + STEP + '"] input'); if (first) first.focus({ preventScroll: true }); });
   (mqStep.addEventListener ? mqStep.addEventListener("change", function () { showStep(STEP); }) : mqStep.addListener(function () { showStep(STEP); }));
 
   $("bookBtn").addEventListener("click", openCheckout);
@@ -308,6 +355,7 @@
 
   $("coForm").addEventListener("submit", function (e) {
     e.preventDefault();
+    if (mqStep.matches && STEP < STEPS) { $("stepNext").click(); return; }
     var err = $("coErr"); err.hidden = true;
     var name = $("cName").value.trim(), phone = $("cPhone").value.trim(), email = $("cEmail").value.trim();
     var aF = $("cAddrFrom").value.trim(), aT = $("cAddrTo").value.trim(), missing = [];
@@ -357,7 +405,7 @@
   if (qs.get("from") && qs.get("to")) {
     $("from").value = qs.get("from"); $("to").value = qs.get("to"); $("items").value = qs.get("items") || "";
     var qd = qs.get("date");
-    if (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) { var qp = qd.split("-"), qdd = new Date(+qp[0], +qp[1] - 1, +qp[2]); if (qdd >= earliest()) { $("wPick").checked = true; pick.hidden = false; pick.value = qd; } }
+    if (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) { var qp = qd.split("-"), qdd = new Date(+qp[0], +qp[1] - 1, +qp[2]); if (qdd >= earliest()) { $("wPick").checked = true; pick.hidden = false; pick.value = qd; } else S.dateNote = true; } else if (qd) S.dateNote = true;
     var qh = Math.max(0, Math.min(3, parseInt(qs.get("helpers"), 10) || 0));
     if (qh) S.pendingHelpers = qh;
     $("quoteForm").requestSubmit ? $("quoteForm").requestSubmit() : $("goBtn").click();

@@ -12,11 +12,11 @@
 <meta property="og:image" content="https://rajdeepwif-eng.github.io/m6freight-test-site/img/hero-motorway.jpg">
 <meta property="og:url" content="https://rajdeepwif-eng.github.io/m6freight-test-site/">
 <meta name="theme-color" content="#08356f">
-<link rel="preload" as="image" href="img/hero-motorway.webp" media="(min-width: 921px)">
-<link rel="preload" as="image" href="img/hero-motorway-800.webp" media="(max-width: 920px)">
+<link rel="preload" as="image" type="image/webp" href="img/hero-motorway.webp" media="(min-width: 921px)">
+<link rel="preload" as="image" type="image/webp" href="img/hero-motorway-800.webp" media="(max-width: 920px)">
 <title>M6 Freight</title>
 <meta name="description" content="One van, clear all-in prices. Local jobs by the hour, longer trips at a fixed price. Book in a minute, no account. Same-day courier, single items, home moves and trade deliveries.">
-<link rel="stylesheet" href="styles.css?v=20261118c">
+<link rel="stylesheet" href="styles.css?v=20261118e">
 </head>
 <body>
 <div style="background:#ffc20e;color:#101826;text-align:center;font:700 14px/1.4 Arial,sans-serif;padding:6px 10px">TEST SITE: prices are placeholders and bookings here are for testing only.</div>
@@ -26,8 +26,9 @@
     <a class="logo" href="#top" aria-label="M6 Freight home"><span class="shield">M6</span>FREIGHT</a>
     <nav aria-label="Main">
       <a href="#reasons">Why us</a>
-      <a href="#moves">Moves</a>
-      <a href="#trade">Trade</a>
+      <a href="#reviews">Reviews</a>
+      <a href="trade.html">Trade</a>
+      <a href="track.html">Track a job</a>
       <a href="#faq">FAQ</a>
       <a class="call" id="callTop" href="#">Call</a>
     </nav>
@@ -81,6 +82,10 @@
       <p class="note">No name, email or phone needed to see your price.</p>
     </form>
   </div>
+</section>
+
+<section id="stats" hidden aria-label="M6 Freight in numbers">
+  <div class="wrap statstrip" id="statStrip"></div>
 </section>
 
 <!-- RESULTS -->
@@ -238,7 +243,7 @@
     <div style="display:grid;gap:14px">
       <h2 style="margin:0">Moves and single items</h2>
       <ul class="ticks">
-        <li>Items strapped down, blankets for furniture</li>
+        <li>Items strapped down in the van</li>
         <li>No stairs fee</li>
         <li>Sofa from Facebook Marketplace? Send the listing and we'll collect it</li>
         <li>Your arrival window the day before</li>
@@ -250,7 +255,7 @@
 </section>
 
 <section class="band" id="padding" hidden style="background:#fff">
-  <div class="wrap" style="max-width:860px;display:grid;gap:12px">
+  <div class="wrap" style="display:grid;gap:12px">
     <h2 style="margin:0">Everything padded, every time</h2>
     <p>Blankets, shrink-wrap and straps on every piece, with door-frame protectors and floor runners in your home. It's standard on every job, not an extra.</p>
   </div>
@@ -276,7 +281,7 @@
         <li>Delivery confirmation on WhatsApp</li>
         <li>For furniture and appliance shops, builders' merchants, estate agents and workshops</li>
       </ul>
-      <a class="btn btn-go" id="bizWa" href="#" target="_blank" rel="noopener" style="width:max-content">Open a trade account</a>
+      <div style="display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-go" href="trade.html" style="width:max-content">Trade accounts</a><a class="btn btn-ghost" id="bizWa" href="#" target="_blank" rel="noopener" style="width:max-content;border-color:#fff;color:#fff">Ask on WhatsApp</a></div>
     </div>
   </div>
 </section>
@@ -289,17 +294,18 @@
   </div>
 </section>
 
-<section class="band" id="reviews" hidden>
-  <div class="wrap">
-    <h2>Rated on Google</h2>
-    <p id="revLine" style="font-size:1.2rem"></p>
+<section class="band" id="reviews" hidden style="background:#fff">
+  <div class="wrap" style="display:grid;gap:16px">
+    <div class="revhead"><h2 style="margin:0">What customers say</h2><p id="revLine" style="font-size:1.15rem"></p></div>
+    <div class="revgrid" id="revGrid"></div>
+    <p class="small"><a href="reviews-policy.html">How we collect reviews</a></p>
   </div>
 </section>
 
 <section class="band" id="faq">
-  <div class="wrap" style="max-width:820px">
+  <div class="wrap"><div style="max-width:860px">
     <h2>Questions</h2>
-    <details><summary>What's included in the price?</summary><p>The van, the driver, fuel and straps, with no booking fee and no stairs fee. On local hourly jobs you pay for the time we actually take. Extra people to carry are optional and priced before you book.</p></details>
+    <details open><summary>What's included in the price?</summary><p>The van, the driver, fuel and straps, with no booking fee and no stairs fee. On local hourly jobs you pay for the time we actually take. Extra people to carry are optional and priced before you book.</p></details>
     <details><summary>How does hourly pricing work for local jobs?</summary><p id="faqHourly"></p></details>
     <details><summary>Do I need an account?</summary><p>No. Book with your name, mobile and addresses.</p></details>
     <details><summary>How do I pay?</summary><p id="faqPay"></p></details>
@@ -310,7 +316,7 @@
     <details><summary>Do I need to be there?</summary><p>Someone needs to be at both ends to let us in and check everything's arrived. Tell us if it's someone else and we'll message them too.</p></details>
     <details><summary>Can you dismantle furniture?</summary><p>Simple jobs like bed frames and table legs, yes. Mention it when you book so we allow the time.</p></details>
     <details><summary>How do I check you're a real company?</summary><p id="faqReal"></p></details>
-  </div>
+  </div></div>
 </section>
 <section class="band biz" id="closing">
   <div class="wrap" style="display:grid;gap:14px;justify-items:start">
@@ -325,15 +331,15 @@
   <div class="wrap">
     <div><h3>M6 Freight</h3><p id="fCompany"></p></div>
     <div><h3>Contact</h3><p id="fContact"></p></div>
-    <div><h3>Info</h3><p><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a></p></div>
+    <div><h3>Info</h3><p><a href="trade.html">Trade accounts</a><br><a href="track.html">Track a job</a><br><a href="guides/man-and-van-prices.html">Man and van prices guide</a><br><a href="guides/moving-checklist.html">Moving checklist</a><br><a href="terms.html">Booking terms</a><br><a href="privacy.html">Privacy</a><br><a href="reviews-policy.html">Reviews policy</a></p><p class="small" id="areaLinks" style="color:#c6cfdc"></p></div>
   </div>
 </footer>
 
 <div class="bar" id="bar"><div><div class="note" id="barVan"></div><div class="p tab" id="barPrice"></div></div><button class="btn btn-go" type="button" id="barBook">Book</button></div>
 <a class="wa" id="waFloat" href="#" target="_blank" rel="noopener">WhatsApp us</a>
 
-<script src="config.js?v=20261118c"></script>
-<script src="engine.js?v=20261118c"></script>
-<script src="app.js?v=20261118c"></script>
+<script src="config.js?v=20261118e"></script>
+<script src="engine.js?v=20261118e"></script>
+<script src="app.js?v=20261118e"></script>
 </body>
 </html>

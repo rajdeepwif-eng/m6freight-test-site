@@ -43,10 +43,15 @@ Charge the exact total by card at checkout. This needs one small server function
 - **Deposits:** a trip deposit is the higher of £25 or 20% of the price; `localDeposit` can be set if no-shows become a problem.
 
 ## Update 18 Nov 2026
-- Hourly rates replaced with **market-based placeholders** (Wolverhampton average about £43/hr; Hello Vans from £40/hr; Checkatrade UK average £64/hr). Per-mile placeholders were lowered to fit Homemove's £1–£2/mile range. They are still not his prices.
+- Hourly rates replaced with **market-based placeholders** (Wolverhampton directory average about £50/hr, range £32–£120; Hello Vans 1 mover from £40/hr, 2 movers from £60/hr, 2-hour minimum; Checkatrade UK average £64/hr). Per-mile placeholders were lowered to fit Homemove's £1–£2/mile range. They are still not his prices.
 - Added `golive.html` (checklist), a favicon, WhatsApp/Facebook link previews, search-engine business data, a 404 page, and an "old enquiry" reply option in the quote desk.
 
 ## Update 18 Nov 2026 (later)
 - On phones, checkout now goes one step per screen (details, then addresses, then payment), following the GOV.UK "one thing per page" pattern. Desktop still shows the whole form at once.
 - WebP images: the hero is about 50% smaller and preloaded. Phone keyboards now match each field (number pad for phone numbers, capitals for postcodes).
 - To add next (needs his accounts): a postcode-to-address lookup service, and Apple Pay/Google Pay deposits through Stripe Checkout.
+
+## 18 Nov 2026: year-one build + 50-lead stress test
+- Added (SAMPLE-labelled while `demoMode` is true): reviews, rating bar, stats strip, driver section, return-trips board, trade portal (trade.html), job tracking (track.html), 10 town pages (areas/), 2 price guides (guides/). golive.html now has a "SAMPLE content OFF" row — demoMode must be false before go-live.
+- Stress test `tests/stress50.py`: 54 lead-to-booking scenarios (local, long trips, islands, weekend/same-day/flexible, helpers, oversize, bad postcodes/dates/phones, XSS, very long notes, mobile 3-step, links from the quote desk, town pages) plus engine checks. 54/54 pass. Quote desk → site link prices match on 5 sample jobs.
+- Fixes from the test and council: ferry jobs (NI, IoW, IoM, Channel Is., Scottish islands, Scilly) no longer get a road price; old checkout closes on a new price and refreshes if helpers/date/van change; too-big loads lose the price-hold button; "estimated" (not "fixed") when only the postcode area is known; quote desk £NaN fixed, extra people reset, past dates blocked, town parsing; "N-bedroom house" and "a couple of" understood; Enter on a mobile step moves to the next step; claim wording matched to flags; 404 page fixed; benchmark figures corrected (HaMuch £50 avg, Hello Vans crew pricing; 15% return share marked ASSUMED).

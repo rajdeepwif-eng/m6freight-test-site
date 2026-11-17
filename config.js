@@ -46,8 +46,8 @@ window.M6_CONFIG = {
      base/perMile/minimum = fixed trip pricing. CONFIRM every number. */
   vans: [
     // Hourly rates = MARKET-BASED PLACEHOLDERS (checked 18 Nov 2026), not his prices. CONFIRM.
-    //  - Wolverhampton removals average ~£43/hr, range £37–£120 (hamuch.com)
-    //  - Hello Vans Wolverhampton: small van + driver from £40/hr; Luton + 2 crew ~£60–£80/hr
+    //  - Wolverhampton removals directory average ~£50/hr, range £32–£120 (hamuch.com, checked 18 Nov 2026)
+    //  - Hello Vans Wolverhampton: 1 mover from £40/hr, 2 movers from £60/hr, 3 from £80/hr, 2-hour minimum
     //  - Checkatrade UK 2026: 1 man + van avg £64/hr (£35–£93); 2 men £78/hr
     // Per-mile (trips) = placeholders kept so the charged rate incl. return share stays inside
     //  Homemove's £1–£2/mile guide for 100+ mile jobs. Benchmark with 5 real local quotes.
@@ -60,7 +60,7 @@ window.M6_CONFIG = {
   pricing: {
     roadFactor: 1.22,          // straight-line miles x this ≈ road miles (checked: B'ham–Manchester 86 vs 87)
     roadFactorLong: 1.15,      // trips over ~100 straight-line miles run mostly on motorways (checked: Durham–Bishop's Stortford ≈ 245 vs OSRM 242)
-    returnShare: 0.15,         // share of the empty return leg charged on trips
+    returnShare: 0.15,         // ASSUMED - confirm: share of the empty return leg charged on trips (no source)
     minimumHours: 2,           // local hourly jobs
     incrementMinutes: 15,
     localMph: 20,              // town driving, for local time estimates
@@ -94,6 +94,28 @@ window.M6_CONFIG = {
   /* Cancellation: SOLICITOR TO CONFIRM. Dated van jobs may fall outside the 14-day cancellation right
      (Consumer Contracts Regs 2013 reg 28(1)(h)). This text is shown before booking. */
   cancellationPolicy: "Change your date free up to 48 hours before. Cancellation terms are in our booking terms (being finalised).",
+
+  /* TEST SITE ONLY. demoMode shows clearly-labelled SAMPLE reviews, rating, stats, return trips and
+     job tracking so you can see what the site looks like in a year. MUST be false before go-live:
+     publishing invented reviews or stats is illegal under UK consumer law (DMCC Act 2024). */
+  demoMode: true,
+  sample: {
+    rating: "4.9", reviewCount: "127",
+    stats: [["1,200+", "jobs done"], ["98%", "on time"], ["15 min", "typical reply"], ["£0", "booking fees"]],
+    reviews: [
+      ["Sarah, Wolverhampton", 5, "Sofa from Marketplace collected the same afternoon. Price on the website was exactly what I paid."],
+      ["Daniel, Walsall", 5, "Booked at 9pm, confirmed on WhatsApp before I'd put the kettle on. Turned up in the window he said."],
+      ["Priya, Telford", 5, "Flat move, 2nd floor, no lift. Two hours as estimated, everything strapped and careful."],
+      ["Mark, Dudley (trade)", 5, "We use them for furniture deliveries every week. One message and it's done, invoice at the month end."],
+      ["Aisha, Birmingham", 4, "Great job on a student move. Running 20 minutes late but he messaged ahead."],
+      ["Tom, Cannock", 5, "Moved a fridge freezer and washer to my new place. Clear price, no surprises."]
+    ],
+    trips: [
+      { from: "Wolverhampton", to: "London", date: "+3", price: 145, van: "large" },
+      { from: "Birmingham", to: "Manchester", date: "+5", price: 95, van: "medium" },
+      { from: "Wolverhampton", to: "Bristol", date: "+8", price: 120, van: "large" }
+    ]
+  },
 
   leadWebhookUrl: "",                // optional n8n / Make / Zapier webhook for every price + booking
   siteUrl: "https://rajdeepwif-eng.github.io/m6freight-test-site/"

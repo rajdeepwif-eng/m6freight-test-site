@@ -255,3 +255,32 @@ body.has-bar .wa{bottom:84px}
   #coForm.stepped.last #stepNext{display:none}
   #coForm.stepped.first #stepBack{visibility:hidden}
 }
+
+/* Polish (18 Nov) */
+p,li{text-wrap:pretty}
+section.band{padding:48px 0}
+.ricon{width:34px;height:34px;padding:6px;border-radius:9px;background:var(--blue-soft);fill:none;stroke:var(--blue);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.reason{gap:10px}
+.steps li::before,.junction{height:28px;line-height:24px;display:inline-flex;align-items:center;justify-content:center;min-width:38px;box-sizing:border-box}
+#areaTowns .chip.alt{background:var(--blue);border-color:var(--blue);color:#fff}
+#area{padding-bottom:24px}
+details[open]>summary{margin-bottom:2px}
+
+/* Year-one features */
+.sample{display:inline-block;vertical-align:middle;font:800 .68rem/1 var(--body);letter-spacing:.06em;background:#fde68a;color:#6b4d00;border:1px dashed #b07d00;border-radius:4px;padding:3px 6px;margin-left:4px}
+.statstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:18px 20px}
+@media (max-width:860px){.statstrip{grid-template-columns:repeat(2,1fr)}}
+.statbox{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:grid}
+.statbox b{font-family:var(--display);font-size:1.9rem;line-height:1;color:var(--blue-deep)}
+.statbox span{color:var(--muted);font-size:.9rem}
+.statbox.note{align-content:center;gap:6px;background:transparent;border-style:dashed}
+.revhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:10px}
+.revgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media (max-width:860px){.revgrid{grid-template-columns:1fr}}
+.rev{margin:0;background:var(--paper);border-radius:12px;padding:16px;display:grid;gap:8px}
+.rev blockquote{margin:0;font-size:1.02rem}
+.rev figcaption{font-weight:700;font-size:.9rem;color:var(--muted)}
+.stars{color:#f5a400;letter-spacing:2px;font-size:1.1rem}.stars .off{color:#d0d6de}
+.phph{width:100%;height:100%;display:grid;place-items:center;align-content:center;gap:10px;background:repeating-linear-gradient(45deg,#eef2f7 0 14px,#e4eaf2 14px 28px);color:var(--muted);font-weight:700;text-align:center;padding:20px}
+.phph svg{width:90px;height:90px;fill:none;stroke:var(--blue);stroke-width:1.4}
+.tagb{white-space:nowrap}
