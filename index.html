@@ -18,7 +18,7 @@
   <div class="wrap">
     <a class="logo" href="#top" aria-label="M6 Freight home"><span class="shield">M6</span>FREIGHT</a>
     <nav aria-label="Main">
-      <a href="#how">How it works</a>
+      <a href="#reasons">Why us</a>
       <a href="#moves">Moves</a>
       <a href="#trade">Trade</a>
       <a href="#faq">FAQ</a>
@@ -31,6 +31,7 @@
 <section class="hero">
   <div class="wrap">
     <div>
+      <a class="ratebar" id="rateBar" hidden href="#" target="_blank" rel="noopener"></a>
       <h1>One van.<br>One honest price.<br><em>Booked in 60 seconds.</em></h1>
       <p class="sub" id="heroSub">All-in prices: van, driver, fuel, blankets and stairs included. Nothing to pay until local jobs are done.</p>
       <div class="ways" aria-label="Other ways to get a price">
@@ -191,21 +192,24 @@
   </div>
 </section>
 
-<section class="band" id="how">
+<section class="band" id="reasons">
   <div class="wrap">
-    <h2>How pricing works</h2>
-    <div class="grid3">
-      <div class="tile"><span class="junction">LOCAL</span><h3>By the hour, all-in</h3><p id="howLocal"></p></div>
-      <div class="tile"><span class="junction">TRIPS</span><h3>One fixed price</h3><p>Longer journeys and single items get one fixed price for the whole job. A small refundable deposit holds your slot.</p></div>
-      <div class="tile"><span class="junction">ALWAYS</span><h3>No surprises</h3><p id="howAlways"></p></div>
-    </div>
+    <h2>Why people pick us</h2>
+    <div class="grid3" id="reasonCards"></div>
   </div>
 </section>
 
-<section class="band" id="trust" style="background:#fff">
+<section class="band" id="driver" hidden style="background:#fff">
+  <div class="wrap split">
+    <div class="ph"><img id="driverImg" alt="" loading="lazy"></div>
+    <div style="display:grid;gap:12px"><h2 style="margin:0" id="driverH"></h2><p id="driverP"></p></div>
+  </div>
+</section>
+
+<section class="band" id="how">
   <div class="wrap">
-    <h2>Who turns up</h2>
-    <div class="trust" id="trustTiles"></div>
+    <h2>How a job actually goes</h2>
+    <ol class="steps" id="howSteps"></ol>
   </div>
 </section>
 
@@ -223,6 +227,13 @@
       </ul>
       <a class="btn btn-go" href="#top" style="width:max-content">Get my price</a>
     </div>
+  </div>
+</section>
+
+<section class="band" id="padding" hidden style="background:#fff">
+  <div class="wrap" style="max-width:860px;display:grid;gap:12px">
+    <h2 style="margin:0">Everything padded, every time</h2>
+    <p>Blankets, shrink-wrap and straps on every piece, with door-frame protectors and floor runners in your home. It's standard on every job, not an extra.</p>
   </div>
 </section>
 
@@ -251,6 +262,14 @@
   </div>
 </section>
 
+<section class="band" id="area">
+  <div class="wrap" style="display:grid;gap:14px">
+    <h2 style="margin:0">Where we work</h2>
+    <p id="areaLine"></p>
+    <div class="chips" id="areaTowns"></div>
+  </div>
+</section>
+
 <section class="band" id="reviews" hidden>
   <div class="wrap">
     <h2>Rated on Google</h2>
@@ -268,6 +287,17 @@
     <details><summary>Can I change or cancel?</summary><p id="faqChange"></p></details>
     <details><summary>Are my things insured?</summary><p id="faqIns">Ask us on WhatsApp for our current goods-in-transit cover before you book.</p></details>
     <details><summary>Something unusual or heavy?</summary><p>Send a photo on WhatsApp and we'll give you a fixed price.</p></details>
+    <details><summary>What won't you move?</summary><p>Gas bottles, petrol, fireworks, ammunition, chemicals, anything illegal, and live animals. Pianos, safes and anything over about 100 kg: tell us first so we bring the right help.</p></details>
+    <details><summary>Do I need to be there?</summary><p>Someone needs to be at both ends to let us in and check everything's arrived. Tell us if it's someone else and we'll message them too.</p></details>
+    <details><summary>Can you dismantle furniture?</summary><p>Simple jobs like bed frames and table legs, yes. Mention it when you book so we allow the time.</p></details>
+    <details><summary>How do I check you're a real company?</summary><p id="faqReal"></p></details>
+  </div>
+</section>
+<section class="band biz" id="closing">
+  <div class="wrap" style="display:grid;gap:14px;justify-items:start">
+    <h2 style="margin:0">Want us to take it from here?</h2>
+    <p>Get your all-in price in about a minute. Nothing to pay up front for local jobs.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:10px"><a class="btn btn-go" href="#top">Get my price</a><a class="btn btn-ghost" id="closeCall" href="#" style="border-color:#fff;color:#fff"></a></div>
   </div>
 </section>
 </main>

@@ -28,21 +28,54 @@
   $("flexPct").textContent = P.flexiblePct;
   var promises = ["No account needed", "Reply within " + co.replyPromiseMinutes + " min · " + co.hours, "Free date changes up to " + P.freeChangeHours + "h before"];
   $("promises").innerHTML = promises.map(function (p) { return '<span class="pill">' + esc(p) + "</span>"; }).join("");
-  $("howLocal").textContent = "Jobs within " + C.base.localRadiusMiles + " miles of " + C.base.place + ": from £" + minRate + "/hr for van and driver, fuel and stairs included. " + P.minimumHours + "-hour minimum, then " + P.incrementMinutes + "-minute steps. The clock starts when we arrive at your door.";
-  $("howAlways").textContent = "One all-in figure, no booking fees and no add-ons on the day. Free date changes up to " + P.freeChangeHours + " hours before.";
-  $("faqHourly").textContent = $("howLocal").textContent + " We show you an estimate before you book; you pay for the actual time.";
+  var localTxt = "Jobs within " + C.base.localRadiusMiles + " miles of " + C.base.place + ": from £" + minRate + "/hr for van and driver, fuel and stairs included. " + P.minimumHours + "-hour minimum, then " + P.incrementMinutes + "-minute steps. The clock starts when we arrive at your door.";
+  $("faqHourly").textContent = localTxt + " We show you an estimate before you book; you pay for the actual time.";
   $("faqPay").textContent = "Local jobs: nothing until the job's done (" + PAY.payMethods + "). Fixed-price trips: a £" + PAY.tripDeposit + " refundable deposit holds the slot, the rest on the day. Trade accounts pay by invoice.";
   $("faqChange").textContent = "Change your date free up to " + P.freeChangeHours + " hours before. Your cancellation rights are set out in the booking terms.";
   if (co.goodsInTransitCover) $("faqIns").textContent = "Yes. Goods in transit are covered up to " + co.goodsInTransitCover + " per job" + (co.publicLiabilityCover ? ", with " + co.publicLiabilityCover + " public liability" : "") + ". Tell us about anything worth more before you book.";
+  var chUrl = "https://find-and-update.company-information.service.gov.uk/company/" + co.companyNumber;
+  $("faqReal").innerHTML = "We're " + esc(co.legalName) + ", company number " + esc(co.companyNumber) + '. You can check us on <a href="' + chUrl + '" target="_blank" rel="noopener">Companies House</a>' + (co.googleReviewsUrl ? ' and read our <a href="' + esc(co.googleReviewsUrl) + '" target="_blank" rel="noopener">Google reviews</a>' : "") + ".";
+  $("closeCall").href = "tel:+" + co.phoneIntl; $("closeCall").textContent = "Call " + co.phoneDisplay;
 
-  var tiles = [];
-  if (co.ownerDriven) tiles.push(["The owner drives your job", "No call centre, no stranger. The person you message is the person who turns up" + (co.ownerFirstName ? ": " + co.ownerFirstName + "." : ".")]);
-  tiles.push(["Driver photo the day before", "You'll know who's coming, in which van, and the arrival window."]);
-  tiles.push(["Call 30 minutes out", "Plus a live map link on WhatsApp while we're on the way."]);
-  tiles.push([co.goodsInTransitCover ? "Covered to " + co.goodsInTransitCover : "Proof at every step", co.goodsInTransitCover ? "Goods in transit insurance on every job." : "Photos at loading and delivery, sent to you."]);
-  $("trustTiles").innerHTML = tiles.map(function (t) { return '<div class="tile"><b>' + esc(t[0]) + "</b><p>" + esc(t[1]) + "</p></div>"; }).join("");
+  /* Why people pick us: only promises switched on in config */
+  var R = [
+    ["One price, nothing added", "Van, driver, fuel, blankets, straps and any stairs are in the price. Nothing gets added at the end."],
+    ["No deposit on local jobs", "Book in about a minute and pay when the job's done. Free date changes up to " + P.freeChangeHours + " hours before."],
+    [co.arrivalWindowHours + "-hour arrival window", "Plus a call about 30 minutes out and a live map link on WhatsApp." + (co.noCancellationsMonths ? " No cancellations by us in the last " + co.noCancellationsMonths + " months." : "")]
+  ];
+  if (co.ownerDriven) R.push(["The owner drives your job", "The person you message is the person who turns up" + (co.dbsChecked ? ", DBS checked." : ".") + " Driver photo sent the day before."]);
+  if (co.paddingStandard) R.push(["Padded, every time", "Blankets and wrap on every piece, door-frame and floor protection in your home. Standard, not an extra."]);
+  if (co.damagePromise) R.push(["Our damage promise", co.damagePromise + (co.claimReplyHours ? " We reply to any damage report within " + co.claimReplyHours + " hours." : "")]);
+  else R.push(["Proof at every step", "Photos at loading and at delivery, sent to you on WhatsApp."]);
+  if (co.goodsInTransitCover) R.push(["Insured", "Goods in transit cover up to " + co.goodsInTransitCover + (co.publicLiabilityCover ? ", public liability " + co.publicLiabilityCover : "") + "."]);
+  R.push(["A real, registered company", esc(co.legalName) + ", company no. " + esc(co.companyNumber) + '. <a href="' + chUrl + '" target="_blank" rel="noopener">Check us on Companies House</a>.']);
+  $("reasonCards").innerHTML = R.map(function (r) { return '<div class="tile reason"><h3>' + esc(r[0]) + "</h3><p>" + (r[1].indexOf("<a ") > -1 ? r[1] : esc(r[1])) + "</p></div>"; }).join("");
+
+  /* Meet your driver: only with a REAL photo */
+  if (co.driverPhoto) {
+    $("driver").hidden = false; $("driverImg").src = co.driverPhoto;
+    $("driverImg").alt = (co.ownerFirstName || "Your driver") + " with the M6 Freight van";
+    $("driverH").textContent = "Meet " + (co.ownerFirstName || "your driver");
+    $("driverP").textContent = (co.ownerDriven ? "He owns M6 Freight and drives every job himself. " : "") + "You'll get this photo again the day before, so you know exactly who's coming.";
+  }
+
+  /* How a job actually goes */
+  var steps = [
+    ["Get your price", "Postcodes and a list, typed like a text, or photos on WhatsApp. About a minute."],
+    ["Book", "Name, mobile and addresses. No account. " + (PAY.localPayAfter ? "Local jobs: no deposit." : "") ],
+    ["We confirm", "A real person confirms on WhatsApp within " + co.replyPromiseMinutes + " minutes (" + co.hours + ")."],
+    ["Day before", "Driver photo, van and your " + co.arrivalWindowHours + "-hour arrival window."],
+    ["On the day", "Call 30 minutes out. Everything padded, loaded, strapped and delivered."],
+    ["Done", "Photo when it's delivered, then pay. We'll ask how we did."]
+  ];
+  $("howSteps").innerHTML = steps.map(function (s) { return "<li><b>" + esc(s[0]) + "</b><span>" + esc(s[1]) + "</span></li>"; }).join("");
+  $("padding").hidden = !co.paddingStandard;
+  $("areaLine").textContent = "Local hourly pricing within " + C.base.localRadiusMiles + " miles of " + C.base.place + ", including:";
+  $("areaTowns").innerHTML = (C.base.towns || []).map(function (t) { return '<span class="chip">' + esc(t) + "</span>"; }).join("") + '<span class="chip">Anywhere in the UK at a fixed price</span>';
 
   if (co.googleRating && +co.googleReviewCount >= 5) {
+    $("rateBar").hidden = false; $("rateBar").href = co.googleReviewsUrl || "#reviews";
+    $("rateBar").textContent = "★ " + co.googleRating + " from " + co.googleReviewCount + " Google reviews";
     $("reviews").hidden = false;
     $("revLine").innerHTML = "<b>" + esc(co.googleRating) + " ★</b> from " + esc(co.googleReviewCount) + " Google reviews" + (co.googleReviewsUrl ? ' · <a href="' + esc(co.googleReviewsUrl) + '" target="_blank" rel="noopener">Read them all on Google</a>' : "");
   }

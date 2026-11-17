@@ -23,12 +23,20 @@ window.M6_CONFIG = {
     publicLiabilityCover: "",                    // CONFIRM e.g. "£1m" — "" hides it
     googleReviewsUrl: "",                        // your Google review link
     googleRating: "",                            // REAL rating only, e.g. "4.9" — shown once count >= 5
-    googleReviewCount: ""                        // REAL count only
+    googleReviewCount: "",                       // REAL count only
+    arrivalWindowHours: 2,                       // arrival window you promise
+    paddingStandard: true,                       // CONFIRM: blankets, wrap, door + floor protectors on every job (buy the kit first)
+    damagePromise: "",                           // CONFIRM with insurer, e.g. "If we break it, we repair or replace it up to £500" — "" hides it
+    claimReplyHours: 0,                          // e.g. 48 = "we reply to any damage report within 48h" — 0 hides it
+    dbsChecked: false,                           // true only if the driver holds a current DBS check
+    driverPhoto: "",                             // REAL photo path, e.g. "img/driver.jpg" — "" hides the Meet your driver section
+    noCancellationsMonths: 0                     // e.g. 12 = "No cancellations by us in 12 months" — only if true
   },
 
   /* Where the van is based. Jobs with BOTH ends inside the radius are priced hourly (all-in);
      anything else gets a fixed all-in trip price. */
-  base: { place: "Wolverhampton", localRadiusMiles: 25 },   // CONFIRM
+  base: { place: "Wolverhampton", localRadiusMiles: 25,      // CONFIRM
+          towns: ["Wolverhampton", "Walsall", "Dudley", "West Bromwich", "Birmingham", "Telford", "Cannock", "Stafford", "Kidderminster", "Bridgnorth"] },
 
   /* Vans. hourly = all-in rate for van + driver (fuel, blankets, straps, stairs included).
      base/perMile/minimum = fixed trip pricing. CONFIRM every number. */
